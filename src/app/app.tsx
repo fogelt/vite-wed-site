@@ -1,12 +1,10 @@
-import { Link, Outlet } from 'react-router';
+import { Outlet } from 'react-router';
+import { NavBar } from '@/components/ui';
 
 export function App() {
   return (
     <div>
-      <nav>
-        <Link to="/">Home</Link> | <Link to="/about">About</Link>
-      </nav>
-      {/* Child routes render here */}
+      <NavBar />
       <main>
         <Outlet />
       </main>

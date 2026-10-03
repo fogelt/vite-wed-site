@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
+import { fetchPhotosByTag } from "@/services/photo-fetcher";
 import { ImageContainer, ImageModal } from '@/components/ui';
+import { AboutLayout } from '@/components/layouts/about-layout';
 
 interface Photo {
   id: string;
@@ -37,6 +39,12 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
     }
   });
 
+  // Fetch portrait for the about section (uploaded under the "about" tag)
+  const { data: aboutPhotos = [] } = useQuery({
+    queryKey: ["photos", "about"],
+    queryFn: () => fetchPhotosByTag("about"),
+  });
+
   const firstThree = photos.slice(0, 3);
   const theRest = photos.slice(3);
 
@@ -51,6 +59,31 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
           setSelectedIndex(index);
         }}
         isLoading={isLoading}
+      />
+
+      {/* Hero / Welcome */}
+      <div className="max-w-3xl mx-auto px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
+        <p className="text-[11px] uppercase tracking-[0.4em] text-stone-400 mb-4">
+          Bröllopsfotograf i Skåne
+        </p>
+        <h1 className="text-3xl md:text-5xl font-light tracking-wide text-stone-900 mb-6">
+          Välkomna hit
+        </h1>
+        <p className="text-stone-500 font-light leading-relaxed text-sm md:text-base">
+          Vad roligt att ni hittat hit! Jag heter Myelie och fotograferar bröllop
+          med fokus på äkta känslor och de små ögonblicken som annars bara passerar.
+          Bläddra runt bland bilderna nedan, lär känna mig lite bättre och kika på
+          mina bröllopspaket — hör sedan gärna av er så berättar jag mer.
+        </p>
+      </div>
+
+      {/* About Section */}
+      <AboutLayout
+        image={
+          aboutPhotos[0]
+            ? { url: aboutPhotos[0].url, alt: aboutPhotos[0].alt || "Myelie Lendelund" }
+            : undefined
+        }
       />
 
       {/* Pricing Section */}

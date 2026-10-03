@@ -20,13 +20,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
           
       - name: Install dependencies
-        run: npm install
+        run: yarn install --immutable
         
       - name: Build
-        run: npm run build
+        run: yarn build
         env:
           VITE_CLERK_USER_ID: ${{ secrets.VITE_CLERK_USER_ID }}
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}

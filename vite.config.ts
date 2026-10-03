@@ -1,19 +1,32 @@
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vite'
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 import path from 'path';
 
+// https://vitejs.dev/config/
 export default defineConfig({
+  base: '/vite-wed-site/',
   plugins: [
     react(),
-    babel({ presets: [reactCompilerPreset()] }),
-    tailwindcss(),
   ],
+
+  css: {
+    postcss: path.resolve(__dirname, 'postcss.config.cjs'),
+  },
 
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
-})
+
+  server: {
+    port: 3000,
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    minify: true,
+    sourcemap: false,
+  },
+});

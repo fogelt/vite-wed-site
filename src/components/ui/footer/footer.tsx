@@ -1,0 +1,76 @@
+import { Instagram, Linkedin, Mail, MapPin, Camera, Phone } from 'lucide-react';
+import { AdminButton } from '@/components/ui';
+
+
+export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="w-full py-12 border-t border-gray-300 bg-white">
+      <div className="flex flex-col items-center justify-center gap-6">
+        <AdminButton />
+        {/* Social Icons Row */}
+        <div className="flex items-center gap-8 text-gray-500">
+          <a
+            href="https://www.instagram.com/myelielendelund/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black rounded-sm outline-none"
+            aria-label="Följ Myelie Foto på Instagram (öppnas i ny flik)"
+          >
+            <Instagram size={16} strokeWidth={1.2} aria-hidden="true" />
+          </a>
+
+          <a
+            href="https://www.linkedin.com/in/myelie-lendelund-3696b3380/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black rounded-sm outline-none"
+            aria-label="Myelie Lendelund på LinkedIn (öppnas i ny flik)"
+          >
+            <Linkedin size={16} strokeWidth={1.2} aria-hidden="true" />
+          </a>
+
+          <a
+            href="mailto:myelie@live.se"
+            className="hover:text-black transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black rounded-sm outline-none"
+            aria-label="Skicka ett e-postmeddelande till Myelie"
+          >
+            <Mail size={16} strokeWidth={1.2} aria-hidden="true" />
+          </a>
+
+          <a
+            href="tel:+46721682019"
+            className="hover:text-black transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black rounded-sm outline-none"
+            aria-label="Telefonnummer till Myelie"
+          >
+            <Phone size={16} strokeWidth={1.2} aria-hidden="true" />
+          </a>
+        </div>
+
+        {/* Balanced Three-Part Info Row */}
+        <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] tracking-[0.2em] uppercase text-gray-400 font-light">
+
+          {/* Left Side: Specialty */}
+          <div className="flex items-center gap-2">
+            <Camera size={12} strokeWidth={1.2} />
+            <span>Fotograf</span>
+          </div>
+
+          <span className="text-gray-200 hidden sm:block">|</span>
+
+          {/* Middle: Copyright */}
+          <span className="text-gray-500 font-normal">© {currentYear} Myelie Lendelund</span>
+
+          <span className="text-gray-200 hidden sm:block">|</span>
+
+          {/* Right Side: Location */}
+          <div className="flex items-center gap-2">
+            <MapPin size={12} strokeWidth={1.2} />
+            <span>Sverige</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,5 +1,7 @@
 export * from './header'
 export * from './footer'
+export * from './about'
+export * from './welcome'
 export * from './images/image-card'
 export * from './images/image-container'
 export * from './images/image-modal'

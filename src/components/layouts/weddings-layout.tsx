@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
-import { ImageContainer, ImageModal } from '@/components/ui';
+import { fetchPhotosByTag } from "@/services/photo-fetcher";
+import { AboutSection, ImageContainer, ImageModal, WelcomeSection } from '@/components/ui';
 
 interface Photo {
   id: string;
@@ -37,8 +38,15 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
     }
   });
 
+  // Fetch portrait for the about section (uploaded under the "about" tag)
+  const { data: aboutPhotos = [] } = useQuery({
+    queryKey: ["photos", "about"],
+    queryFn: () => fetchPhotosByTag("about"),
+  });
+
   const firstThree = photos.slice(0, 3);
-  const theRest = photos.slice(3);
+  const secondThree = photos.slice(3, 6);
+  const theRest = photos.slice(6);
 
   return (
     <section className="w-full flex flex-col gap-16 py-8 bg-white">
@@ -53,6 +61,28 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
         isLoading={isLoading}
       />
 
+      {/* Welcome Section */}
+      <WelcomeSection />
+
+      {/* Second Gallery Section */}
+      <ImageContainer
+        photos={secondThree}
+        variant="weddings"
+        onItemClick={(photo) => {
+          const index = photos.findIndex(p => p.id === photo.id);
+          setSelectedIndex(index);
+        }}
+        isLoading={isLoading}
+      />
+
+      {/* About Section */}
+      <AboutSection
+        image={
+          aboutPhotos[0]
+            ? { url: aboutPhotos[0].url, alt: aboutPhotos[0].alt || "Myelie Lendelund" }
+            : undefined
+        }
+      />
       {/* Pricing Section */}
       <div className="max-w-6xl mx-auto px-6 w-full">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">

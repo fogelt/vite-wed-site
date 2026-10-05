@@ -16,7 +16,7 @@ export function WelcomeSection() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto px-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
+    <div id="valkommen" className="max-w-3xl mx-auto px-6 text-center scroll-mt-36 md:scroll-mt-28 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
       <p className="text-[11px] uppercase tracking-[0.4em] text-stone-400 mb-4">
         Bröllopsfotograf i Skåne
       </p>

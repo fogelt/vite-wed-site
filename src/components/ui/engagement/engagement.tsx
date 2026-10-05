@@ -27,7 +27,7 @@ export function EngagementSection({ image, isLoading: isImageLoading }: Engageme
   if (isTextLoading) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+    <section id="forlovning" className="max-w-6xl mx-auto px-6 py-16 md:py-24 scroll-mt-28 md:scroll-mt-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
 
         {/* Text Column (left) */}

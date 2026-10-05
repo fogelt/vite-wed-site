@@ -41,7 +41,7 @@ export function AboutSection({ image, isLoading: isImageLoading }: AboutSectionP
   const activeItems = credentials?.filter(item => item.category === activeTab) || [];
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+    <section id="om-mig" className="max-w-6xl mx-auto px-6 py-16 md:py-24 scroll-mt-28 md:scroll-mt-20">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
 
         {/* Image Column */}

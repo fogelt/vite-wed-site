@@ -57,6 +57,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
   return (
     <section className="w-full flex flex-col gap-16 py-8 bg-white">
       {/* Top Gallery Section */}
+      <div id="galleri" className="scroll-mt-36 md:scroll-mt-28">
       <ImageContainer
         photos={firstThree}
         variant="weddings"
@@ -66,6 +67,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
         }}
         isLoading={isLoading}
       />
+      </div>
 
       {/* Welcome Section */}
       <WelcomeSection />
@@ -90,7 +92,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
         }
       />
       {/* Pricing Section */}
-      <div className="max-w-6xl mx-auto px-6 w-full">
+      <div id="priser" className="max-w-6xl mx-auto px-6 w-full scroll-mt-36 md:scroll-mt-28">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
           <h2 className="text-[11px] uppercase tracking-[0.4em] text-stone-400 mb-2">
             Bröllopspaket

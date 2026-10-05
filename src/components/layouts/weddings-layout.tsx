@@ -56,15 +56,6 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
 
   return (
     <section className="w-full flex flex-col gap-16 py-8 bg-white">
-      {/* Engagement Section */}
-      <EngagementSection
-        image={
-          engagementPhotos[0]
-            ? { url: engagementPhotos[0].url, alt: engagementPhotos[0].alt || "Förlovningsfotografering" }
-            : undefined
-        }
-      />
-
       {/* Top Gallery Section */}
       <ImageContainer
         photos={firstThree}
@@ -159,6 +150,15 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
           )}
         </div>
       </div>
+
+      {/* Engagement Section */}
+      <EngagementSection
+        image={
+          engagementPhotos[0]
+            ? { url: engagementPhotos[0].url, alt: engagementPhotos[0].alt || "Förlovningsfotografering" }
+            : undefined
+        }
+      />
 
       {/* Bottom Gallery Section */}
       <ImageContainer

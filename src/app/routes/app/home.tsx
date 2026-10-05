@@ -11,8 +11,8 @@ export default function HomeRoute() {
     canonical: 'https://fogelt.github.io/vite-wed-site/'
   });
   const { data: photos = [], isLoading, error } = useQuery({
-    queryKey: ['photos', 'weddings'],
-    queryFn: () => fetchPhotosByTag('weddings'),
+    queryKey: ['photos', 'weddings_main'],
+    queryFn: () => fetchPhotosByTag('weddings_main'),
   });
 
   if (error) return;

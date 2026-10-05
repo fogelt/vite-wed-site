@@ -45,7 +45,7 @@ export function AdminLayout() {
           isActive={!!activeTab}
           onClick={() => {
             closeAllEditors();
-            setActiveTab('weddings');
+            setActiveTab('weddings_main');
           }}
         />
 
@@ -66,7 +66,7 @@ export function AdminLayout() {
       {/* Inline Photo Editor */}
       {activeTab && (
         <div className="animate-in slide-in-from-bottom-4 duration-700">
-          <PhotoEditor tag="weddings" />
+          <PhotoEditor tag="weddings_main" />
         </div>
       )}
     </div>

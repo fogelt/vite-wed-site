@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
 import { fetchPhotosByTag } from "@/services/photo-fetcher";
-import { AboutSection, ImageContainer, ImageModal, WelcomeSection } from '@/components/ui';
+import { AboutSection, EngagementSection, ImageContainer, ImageModal, WelcomeSection } from '@/components/ui';
 
 interface Photo {
   id: string;
@@ -44,12 +44,27 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
     queryFn: () => fetchPhotosByTag("about"),
   });
 
+  // Fetch image for the engagement section (uploaded under the "engagement" tag)
+  const { data: engagementPhotos = [] } = useQuery({
+    queryKey: ["photos", "engagement"],
+    queryFn: () => fetchPhotosByTag("engagement"),
+  });
+
   const firstThree = photos.slice(0, 3);
   const secondThree = photos.slice(3, 6);
   const theRest = photos.slice(6);
 
   return (
     <section className="w-full flex flex-col gap-16 py-8 bg-white">
+      {/* Engagement Section */}
+      <EngagementSection
+        image={
+          engagementPhotos[0]
+            ? { url: engagementPhotos[0].url, alt: engagementPhotos[0].alt || "Förlovningsfotografering" }
+            : undefined
+        }
+      />
+
       {/* Top Gallery Section */}
       <ImageContainer
         photos={firstThree}

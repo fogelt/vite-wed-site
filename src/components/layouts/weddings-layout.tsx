@@ -75,7 +75,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
       {/* Second Gallery Section */}
       <ImageContainer
         photos={secondThree}
-        variant="weddings"
+        variant="default"
         onItemClick={(photo) => {
           const index = photos.findIndex(p => p.id === photo.id);
           setSelectedIndex(index);
@@ -165,7 +165,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
       {/* Bottom Gallery Section */}
       <ImageContainer
         photos={theRest}
-        variant="weddings"
+        variant="default"
         onItemClick={(photo) => {
           const index = photos.findIndex(p => p.id === photo.id);
           setSelectedIndex(index);

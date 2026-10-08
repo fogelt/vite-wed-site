@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
 import { fetchPhotosByTag } from "@/services/photo-fetcher";
-import { AboutSection, EngagementSection, ImageContainer, ImageModal, WelcomeSection } from '@/components/ui';
+import { AboutSection, EngagementSection, HowItWorks, ImageContainer, ImageModal, WelcomeSection } from '@/components/ui';
 
 interface Photo {
   id: string;
@@ -72,6 +72,9 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
       {/* Welcome Section */}
       <WelcomeSection />
 
+      {/* How It Works Section */}
+      <HowItWorks />
+
       {/* Second Gallery Section */}
       <ImageContainer
         photos={secondThree}
@@ -83,14 +86,6 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
         isLoading={isLoading}
       />
 
-      {/* About Section */}
-      <AboutSection
-        image={
-          aboutPhotos[0]
-            ? { url: aboutPhotos[0].url, alt: aboutPhotos[0].alt || "Myelie Lendelund" }
-            : undefined
-        }
-      />
       {/* Pricing Section */}
       <div id="priser" className="max-w-6xl mx-auto px-6 w-full scroll-mt-36 md:scroll-mt-28">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
@@ -171,6 +166,15 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[], isLoadi
           setSelectedIndex(index);
         }}
         isLoading={isLoading}
+      />
+
+      {/* About Section */}
+      <AboutSection
+        image={
+          aboutPhotos[0]
+            ? { url: aboutPhotos[0].url, alt: aboutPhotos[0].alt || "Myelie Lendelund" }
+            : undefined
+        }
       />
 
       <ImageModal

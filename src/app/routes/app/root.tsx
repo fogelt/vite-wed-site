@@ -5,20 +5,22 @@ import { AnalyticsTracker } from '@/components/analytics';
 
 export default function AppRoot() {
   return (
-    <div className="min-h-screen flex flex-col selection:bg-stone-100">
+    <div className="flex min-h-screen flex-col bg-white">
       <AnalyticsTracker />
       <ScrollToTop />
       <Header />
-      <main className="flex-grow min-h-[90vh]">
+      <main className="flex-grow">
         <Outlet />
       </main>
-      <div className="animate-in fade-in duration-1000 delay-700 fill-mode-both">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 }
 
 export function ErrorBoundary() {
-  return <div className="p-10 text-center">Något gick fel. Försök ladda om sidan.</div>;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-white px-6 text-center text-[11px] uppercase tracking-[0.3em] text-stone-400">
+      Något gick fel. Försök ladda om sidan.
+    </div>
+  );
 }

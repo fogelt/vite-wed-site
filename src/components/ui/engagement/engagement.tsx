@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ImageCard } from '@/components/ui';
+import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/services";
+import { scrollToSection } from "@/utils";
+import { Reveal } from '../reveal';
+import { SectionHeading } from '../section-heading';
 
 interface EngagementSectionProps {
   image?: { url: string; alt: string };
   isLoading?: boolean;
 }
 
-const FALLBACK_TITLE = "Förlovning";
+const FALLBACK_TITLE = "Innan den stora dagen";
 const FALLBACK_TEXT =
   "Innan den stora dagen kommer ögonblicket då allt börjar — förlovningen. En förlovningsfotografering är ett avslappnat sätt att lära känna varandra framför kameran, och ni får vackra bilder att spara och dela medan ni längtar efter bröllopet.";
 
-export function EngagementSection({ image, isLoading: isImageLoading }: EngagementSectionProps) {
+export function EngagementSection({ image }: EngagementSectionProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const { data: content, isLoading: isTextLoading } = useQuery({
@@ -27,41 +30,58 @@ export function EngagementSection({ image, isLoading: isImageLoading }: Engageme
   if (isTextLoading) return null;
 
   return (
-    <section id="forlovning" className="max-w-6xl mx-auto px-6 py-16 md:py-24 scroll-mt-28 md:scroll-mt-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
-
-        {/* Text Column (left) */}
-        <div className="order-1 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
-          <div className="space-y-3 pt-10">
-            <div className="space-y-2">
-              <h2 className="text-[11px] uppercase tracking-[0.4em] text-stone-400 font-bold">Förlovning</h2>
-              <span className="font-normal text-xl text-stone-900 block">
-                {content?.title || FALLBACK_TITLE}
-              </span>
-            </div>
-            <div className="text-stone-600 font-light leading-relaxed text-sm md:text-base whitespace-pre-line">
+    <section id="forlovning" className="scroll-mt-24 py-12 md:scroll-mt-28 md:py-16">
+      <div className="mx-auto w-full max-w-6xl px-6">
+        <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-16">
+          {/* Text */}
+          <Reveal className="order-1">
+            <SectionHeading
+              align="left"
+              eyebrow="Förlovningsfotografering"
+              title={content?.title || FALLBACK_TITLE}
+            />
+            <p className="mt-5 whitespace-pre-line text-[15px] font-light leading-relaxed text-stone-600 md:text-base">
               {content?.text || FALLBACK_TEXT}
-            </div>
-          </div>
-        </div>
-
-        {/* Image Column (right) */}
-        <div className="order-2">
-          {isImageLoading ? (
-            <div className="aspect-[3/4] w-full bg-stone-50 animate-pulse" />
-          ) : image?.url ? (
-            <div className={`transition-opacity duration-1000 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}>
-              <ImageCard
-                url={image.url}
-                alt={image.alt || "Förlovningsfotografering"}
-                className={`aspect-[3/4] w-full object-cover ${imageLoaded ? 'animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both delay-300' : ''
-                  }`}
-                onLoad={() => setImageLoaded(true)}
+            </p>
+            <button
+              onClick={() => scrollToSection('kontakt')}
+              className="group mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-stone-900"
+            >
+              <span className="border-b border-stone-300 pb-1 transition-colors duration-300 group-hover:border-black">
+                Berätta om era planer
+              </span>
+              <ArrowRight
+                size={14}
+                strokeWidth={1.5}
+                className="transition-transform duration-300 group-hover:translate-x-1"
               />
-            </div>
-          ) : null}
-        </div>
+            </button>
+          </Reveal>
 
+          {/* Image */}
+          {image?.url && (
+            <Reveal delay={150} className="order-2">
+              <div className="relative">
+                <div
+                  className="absolute -bottom-4 -right-4 hidden h-full w-full border border-stone-300/70 md:block"
+                  aria-hidden="true"
+                />
+                <div className="relative overflow-hidden bg-stone-50">
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    loading="lazy"
+                    decoding="async"
+                    onLoad={() => setImageLoaded(true)}
+                    className={`aspect-[4/5] w-full object-cover transition-opacity duration-1000 ${
+                      imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                </div>
+              </div>
+            </Reveal>
+          )}
+        </div>
       </div>
     </section>
   );

@@ -3,15 +3,30 @@
 @tailwind utilities;
 
 @layer base {
-  html, body, * {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-white font-sans text-stone-600 antialiased;
+  }
+
+  ::selection {
+    @apply bg-stone-300 text-stone-900;
+  }
+
+  /* Hidden scrollbars (kept from the original design) */
+  html,
+  body,
+  * {
     /* Firefox */
     scrollbar-width: none;
-    
-    /* IE och Edge */
+
+    /* IE and Edge */
     -ms-overflow-style: none;
   }
 
-  /* Targetar Chrome, Safari och nyare Edge */
   *::-webkit-scrollbar,
   html::-webkit-scrollbar,
   body::-webkit-scrollbar {
@@ -19,13 +34,27 @@
     width: 0 !important;
     height: 0 !important;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer utilities {
   .force-scrollbar-show {
     /* Firefox */
     scrollbar-width: thin !important;
-    scrollbar-color: #78716c #f5f4f1 !important; 
+    scrollbar-color: #78716c #f5f4f1 !important;
   }
 
   /* Chrome, Safari, Edge - tvinga fram display: block */

@@ -25,9 +25,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
         element: <AppRoot />,
         ErrorBoundary: AppRootErrorBoundary,
         HydrateFallback: () => (
-          <div className="flex h-screen items-center justify-center">
-            <span className="text-[10px] uppercase tracking-widest text-stone-400">
-              Laddar...
+          <div className="flex h-screen items-center justify-center bg-white">
+            <span className="text-[11px] uppercase tracking-[0.3em] text-stone-400">
+              Laddar…
             </span>
           </div>
         ),

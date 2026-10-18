@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
 import { Mail, Phone } from 'lucide-react';
+import { Reveal } from '../reveal';
 
 const FALLBACK_EMAIL = "myelie@live.se";
 const FALLBACK_PHONE = "+46 72 16 82 019";
@@ -9,7 +10,7 @@ export function ContactCTA() {
   const { data: content } = useQuery({
     queryKey: ["about_content"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("about_content").select("email, phone").maybeSingle();
+      const { data, error } = await supabase.from("about_content").select("*").maybeSingle();
       if (error) return null;
       return data;
     },
@@ -19,34 +20,37 @@ export function ContactCTA() {
   const phone = content?.phone || FALLBACK_PHONE;
 
   return (
-    <section id="kontakt" className="w-full bg-stone-900 text-white scroll-mt-20">
-      <div className="max-w-3xl mx-auto px-6 py-20 md:py-28 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
-        <p className="text-[11px] uppercase tracking-[0.4em] text-stone-400 mb-4">
-          Boka
-        </p>
-        <h2 className="text-3xl md:text-5xl font-light tracking-wide mb-6">
-          Låt oss berätta <span className="font-serif italic">er historia</span>
-        </h2>
-        <p className="text-stone-300 font-light leading-relaxed text-sm md:text-base mb-10">
-          Berätta om era planer så tar vi det därifrån — datum, plats och era tankar.
-          Jag svarar alltid personligt, oftast inom ett par dagar.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href={`mailto:${email}?subject=${encodeURIComponent("Förfrågan om bröllopsfotografering")}`}
-            className="inline-flex items-center gap-3 bg-white text-stone-900 text-[11px] uppercase tracking-[0.25em] font-bold px-10 py-4 hover:bg-stone-200 transition-colors"
-          >
-            <Mail size={14} />
-            Skicka e-post
-          </a>
-          <a
-            href={`tel:${phone.replace(/\s/g, '')}`}
-            className="inline-flex items-center gap-3 border border-stone-600 text-stone-200 text-[11px] uppercase tracking-[0.25em] font-bold px-10 py-4 hover:border-stone-300 hover:text-white transition-colors"
-          >
-            <Phone size={14} />
-            {phone}
-          </a>
-        </div>
+    <section id="kontakt" className="scroll-mt-24 border-t border-stone-200 bg-white md:scroll-mt-28">
+      <div className="mx-auto max-w-3xl px-6 py-14 text-center md:py-20">
+        <Reveal>
+          <p className="text-[11px] uppercase tracking-[0.4em] text-stone-400">Förfrågan</p>
+
+          <h2 className="mt-4 text-2xl font-light leading-tight text-stone-900 md:text-3xl">
+            Låt oss berätta <span className="italic">er historia</span>
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-relaxed text-stone-600 md:text-base">
+            Berätta om era planer så tar vi det därifrån — datum, plats och era tankar.
+            Jag svarar alltid personligt, oftast inom ett par dagar.
+          </p>
+
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href={`mailto:${email}?subject=${encodeURIComponent("Förfrågan om bröllopsfotografering")}`}
+              className="inline-flex w-full items-center justify-center gap-3 border border-black px-10 py-3.5 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-stone-50 sm:w-auto"
+            >
+              <Mail size={14} strokeWidth={1.5} aria-hidden="true" />
+              Skicka e-post
+            </a>
+            <a
+              href={`tel:${phone.replace(/\s/g, '')}`}
+              className="inline-flex w-full items-center justify-center gap-3 border border-stone-300 px-10 py-3.5 text-[11px] uppercase tracking-[0.28em] text-stone-500 transition-colors duration-300 hover:border-stone-400 hover:text-stone-900 sm:w-auto"
+            >
+              <Phone size={14} strokeWidth={1.5} aria-hidden="true" />
+              {phone}
+            </a>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -54,45 +54,53 @@ export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIn
     <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 transition-all duration-300">
 
       {/* Header */}
-      <div className="flex justify-between items-center p-6 md:px-10 z-[120]">
-        <div className="text-white/20 text-[10px] tracking-[0.4em] uppercase font-light">
+      <div className="z-[120] flex items-center justify-between p-6 md:px-10">
+        <div className="text-[11px] uppercase tracking-[0.3em] text-white/35">
           {currentIndex + 1} / {photos.length}
         </div>
-        <button onClick={onClose} className="text-white/40 hover:text-white text-3xl transition-colors">&times;</button>
+        <button
+          onClick={onClose}
+          aria-label="Stäng"
+          className="text-3xl leading-none text-white/40 transition-colors hover:text-white"
+        >
+          &times;
+        </button>
       </div>
 
       {/* Main Image Viewport */}
-      <div className="relative flex-grow flex items-center justify-center px-4 md:px-20" onClick={onClose}>
+      <div className="relative flex flex-grow items-center justify-center px-4 md:px-20" onClick={onClose}>
 
         {/* Navigation Buttons */}
         <button
           onClick={(e) => { e.stopPropagation(); goPrev(); }}
-          className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/20 hover:text-white text-5xl p-4 transition-all z-[110]"
+          aria-label="Föregående bild"
+          className="absolute left-4 top-1/2 z-[110] -translate-y-1/2 p-4 text-5xl text-white/20 transition-colors hover:text-white md:left-10"
         >
           &#8249;
         </button>
 
-        <div className="relative group flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+        <div className="group relative flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
 
-          {/* 1. Variants - Floating OVER the image */}
+          {/* Variants - floating above the image */}
           {allRelated.length > 1 && (
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex gap-3 z-[120] animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="absolute -top-16 left-1/2 z-[120] flex -translate-x-1/2 gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
               {allRelated.map((img) => {
                 const isActive = activeUrl === img.url;
                 return (
                   <button
                     key={img.id}
                     onClick={() => setActiveUrl(img.url)}
+                    aria-label="Visa variant"
                     className="transition-transform active:scale-95"
                   >
                     <div className={`
-                      w-10 h-10 md:w-12 md:h-12 transition-all duration-300 overflow-hidden border
+                      h-10 w-10 overflow-hidden border transition-all duration-300 md:h-12 md:w-12
                       ${isActive
-                        ? 'border-white border-2 scale-110 shadow-lg'
+                        ? 'scale-110 border-2 border-white shadow-lg'
                         : 'border-white/20 opacity-40 blur-[0.5px] hover:opacity-100 hover:blur-0'
                       }
                     `}>
-                      <img src={img.url} className="w-full h-full object-cover" alt="Variant" />
+                      <img src={img.url} className="h-full w-full object-cover" alt="" />
                     </div>
                   </button>
                 );
@@ -105,26 +113,27 @@ export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIn
             key={activeUrl}
             src={activeUrl || currentPhoto.url}
             alt={currentPhoto?.alt || ''}
-            className="max-w-full max-h-[65vh] md:max-h-[70vh] object-contain shadow-2xl animate-in fade-in zoom-in-95 duration-500"
+            className="max-h-[65vh] max-w-full object-contain shadow-2xl animate-in fade-in zoom-in-95 duration-500 md:max-h-[70vh]"
           />
         </div>
 
         <button
           onClick={(e) => { e.stopPropagation(); goNext(); }}
-          className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/20 hover:text-white text-5xl p-4 transition-all z-[110]"
+          aria-label="Nästa bild"
+          className="absolute right-4 top-1/2 z-[110] -translate-y-1/2 p-4 text-5xl text-white/20 transition-colors hover:text-white md:right-10"
         >
           &#8250;
         </button>
       </div>
 
-      {/* 2. Photo Description Area - Bottom */}
+      {/* Photo Description - Bottom */}
       <div
-        className="w-full flex items-center justify-center py-10 min-h-[120px] z-[120]"
+        className="z-[120] flex min-h-[120px] w-full items-center justify-center py-10"
         onClick={(e) => e.stopPropagation()}
       >
         {currentPhoto.description && (
           <div className="max-w-xl px-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <p className="text-white/50 font-light text-[11px] md:text-xs leading-relaxed tracking-[0.15em] uppercase italic">
+            <p className="text-[11px] font-light uppercase italic leading-relaxed tracking-[0.15em] text-white/50 md:text-xs">
               {currentPhoto.description}
             </p>
           </div>

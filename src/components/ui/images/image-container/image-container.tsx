@@ -6,7 +6,8 @@ interface Photo {
   id: string;
   url: string;
   alt?: string;
-  photo_variants?: { id: string; url: string; }[];
+  description?: string;
+  photo_variants?: { id: string; url: string }[];
 }
 
 interface ImageContainerProps {
@@ -17,6 +18,12 @@ interface ImageContainerProps {
   isLoading?: boolean;
 }
 
+/**
+ * The signature mosaic gallery. The "weddings" variant cycles three editorial
+ * row rhythms every 11 photos — ||-|, |-|| and --| (| = 2:3 portrait,
+ * - = 3:2 landscape) — while the default variant keeps the original landscape
+ * pattern.
+ */
 export function ImageContainer({
   photos,
   variant = 'default',
@@ -25,7 +32,7 @@ export function ImageContainer({
   isLoading
 }: ImageContainerProps) {
   const displayPhotos = isLoading
-    ? Array.from({ length: 10 }).map((_, i) => ({ id: `skeleton-${i}`, url: '' })) as Photo[]
+    ? Array.from({ length: 11 }).map((_, i) => ({ id: `skeleton-${i}`, url: '' })) as Photo[]
     : photos;
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
@@ -38,14 +45,35 @@ export function ImageContainer({
       return "xl:h-[265px] w-auto flex-grow";
     }
 
+    if (variant === 'weddings') {
+      // Editorial mosaic: three row rhythms cycle every 11 photos —
+      // ||-|, |-|| and --| (| = 2:3 portrait, - = 3:2 landscape).
+      // Widths are proportional to each tile's aspect so all tiles in a row
+      // share one height; the px subtractions cover the 8px gaps plus a small
+      // rounding margin, letting rows fill the container without wrapping.
+      switch (index % 11) {
+        case 2:
+        case 5: // the landscape in the two 4-photo rows (||-| and |-||)
+          return 'h-[60vh] w-full md:h-auto md:aspect-[3/2] md:w-[calc(43%_-_11px)]';
+
+        case 8:
+        case 9: // the two landscapes in the closing --| row
+          return 'h-[60vh] w-full md:h-auto md:aspect-[3/2] md:w-[calc(41%_-_7px)]';
+
+        case 10: // the portrait that closes the --| row
+          return 'h-[60vh] w-full md:h-auto md:aspect-[2/3] md:w-[calc(18%_-_3.5px)]';
+
+        default: // the portraits in the two 4-photo rows
+          return 'h-[60vh] w-full md:h-auto md:aspect-[2/3] md:w-[calc(19%_-_5px)]';
+      }
+    }
+
     const pos = (index % 10) + 1;
     const base = "flex-grow h-auto";
 
     switch (pos) {
       case 1: case 2: case 3:
-        return base + " " + (variant === 'weddings'
-          ? (pos === 2 ? "h-[60vh] w-full md:w-[50%]" : "h-[60vh] w-full md:w-[20%]")
-          : "h-[70vh] w-full md:w-[28%]");
+        return base + "h-[70vh] w-full md:w-[28%]";
 
       case 4: case 5: case 7: case 9: case 10:
         return base + "h-[60vh] w-full md:w-[45%]";
@@ -68,7 +96,7 @@ export function ImageContainer({
           return (
             <div
               key={photo.id}
-              className={`${sizingClass} bg-stone-200 animate-pulse fade-in min-h-[500px]`}
+              className={`${sizingClass} bg-stone-200 animate-pulse fade-in`}
             />
           );
         }
@@ -98,9 +126,7 @@ export function ImageContainer({
               has_variant={photo.photo_variants?.length ? <Images size={15} /> : null}
             />
           </div>
-
         );
-
       })}
     </div>
   );

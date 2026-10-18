@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ImageCard } from '@/components/ui';
-import { supabase } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { Globe, Mail, Phone } from 'lucide-react'
+import { supabase } from "@/services";
+import { Reveal } from '../reveal';
+import { SectionHeading } from '../section-heading';
 
 interface AboutSectionProps {
   image?: { url: string; alt: string };
@@ -10,9 +10,10 @@ interface AboutSectionProps {
 }
 
 const CATEGORIES = ["Utbildningar", "Utställningar", "Meriter"];
+const FALLBACK_WELCOME =
+  "Vad roligt att ni hittat hit! Jag heter Myelie och fotograferar bröllop med fokus på äkta känslor och de små ögonblicken som annars bara passerar. Bläddra runt bland bilderna nedan, lär känna mig lite bättre och kika på mina bröllopspaket — hör sedan gärna av er så berättar jag mer.";
 
-export function AboutSection({ image, isLoading: isImageLoading }: AboutSectionProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+export function AboutSection({ image }: AboutSectionProps) {
   const [activeTab, setActiveTab] = useState(CATEGORIES[0]);
 
   const { data: content, isLoading: isTextLoading } = useQuery({
@@ -22,6 +23,16 @@ export function AboutSection({ image, isLoading: isImageLoading }: AboutSectionP
       if (error) return null;
       return data;
     }
+  });
+
+  // The welcome greeting now lives inside this intro section
+  const { data: welcome } = useQuery({
+    queryKey: ["welcome_content"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("welcome_content").select("*").maybeSingle();
+      if (error) return null;
+      return data;
+    },
   });
 
   const { data: credentials, isLoading: isCredsLoading } = useQuery({
@@ -36,128 +47,133 @@ export function AboutSection({ image, isLoading: isImageLoading }: AboutSectionP
     }
   });
 
-  // Consolidated loading state for the data
   const isDataFetching = isTextLoading || isCredsLoading;
   const activeItems = credentials?.filter(item => item.category === activeTab) || [];
   const portraitAlt = image?.alt || content?.name || "Myelie Lendelund";
+  const welcomeText = welcome?.text || FALLBACK_WELCOME;
 
   return (
-    <section id="om-mig" className="max-w-4xl mx-auto px-6 py-10 md:py-14 scroll-mt-28 md:scroll-mt-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+    <section id="om-mig" className="scroll-mt-24 py-12 md:scroll-mt-28 md:py-16">
+      <div className="mx-auto w-full max-w-6xl px-6">
+        <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-16">
 
-        {/* Image Column (desktop only) */}
-        <div className="order-2 md:order-1 hidden md:block">
-          {isImageLoading ? (
-            <div className="aspect-[3/4] w-full bg-stone-50 animate-pulse" />
-          ) : image?.url ? (
-            <div className={`transition-opacity duration-1000 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}>
-              <ImageCard
-                url={image.url}
-                alt={portraitAlt}
-                className={`aspect-[3/4] w-full object-cover ${imageLoaded ? 'animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both delay-300' : ''
-                  }`}
-                onLoad={() => setImageLoaded(true)}
+          {/* Portrait (desktop) */}
+          <Reveal className="hidden md:block">
+            <Portrait image={image} alt={portraitAlt} className="max-w-[380px]" />
+          </Reveal>
+
+          {/* Text column */}
+          <div>
+            <Reveal className="mb-8 md:hidden">
+              <Portrait image={image} alt={portraitAlt} className="max-w-[180px]" />
+            </Reveal>
+
+            <Reveal>
+              <SectionHeading
+                align="left"
+                size="compact"
+                eyebrow="Om mig"
+                title={content?.name || "Myelie Lendelund"}
               />
-            </div>
-          ) : null}
-        </div>
+            </Reveal>
 
-        {/* Text Column */}
-        <div className={`order-1 md:order-2 space-y-8 ${isDataFetching
-          ? "opacity-0"
-          : "animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both"
-          }`}>
-
-          {/* Header & Bio */}
-          <div className="space-y-3 pt-4">
-            <div className="flex items-center gap-5">
-              {isImageLoading ? (
-                <div className="md:hidden w-20 h-24 rounded-sm bg-stone-100 animate-pulse shrink-0" />
-              ) : image?.url ? (
-                <img
-                  src={image.url}
-                  alt={portraitAlt}
-                  onLoad={() => setImageLoaded(true)}
-                  className={`md:hidden w-20 h-24 object-cover rounded-sm ring-1 ring-stone-200 shrink-0 transition-opacity duration-1000 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                />
-              ) : null}
-              <div className="space-y-2">
-                <h2 className="text-[11px] uppercase tracking-[0.4em] text-stone-400 font-bold">Om mig</h2>
-                <span className="font-normal text-xl text-stone-900 block">
-                  {content?.name || "Myelie Lendelund"}
-                </span>
+            <Reveal delay={100}>
+              <div className="mt-5 space-y-4 text-[15px] font-light leading-relaxed text-stone-600 md:text-base">
+                <p>{welcomeText}</p>
+                {content?.bio_p1 && <p>{content.bio_p1}</p>}
+                {content?.bio_p2 && <p>{content.bio_p2}</p>}
               </div>
-            </div>
-            <div className="space-y-6 text-stone-600 font-light leading-relaxed text-sm md:text-base">
-              <p>{content?.bio_p1}</p>
-              <p>{content?.bio_p2}</p>
-            </div>
-          </div>
+            </Reveal>
 
-          {/* Kontakt */}
-          <div className="pt-8 pb-8 border-t border-b border-stone-200 space-y-4">
-            <h3 className="text-[11px] uppercase tracking-[0.4em] text-stone-400 font-bold">Kontakt</h3>
-            <div className="space-y-2 text-stone-800 tracking-wide text-sm font-light">
-              <p className="flex items-center gap-3">
-                <Globe size={12} className="text-stone-400" />
-                <span className="text-stone-400">Hemsida:</span>
-                <a href={window.location.origin} className="hover:text-stone-400 transition-colors underline underline-offset-4 decoration-stone-200">
-                  {window.location.hostname}
-                </a>
-              </p>
-              <p className="flex items-center gap-3">
-                <Mail size={12} className="text-stone-400" />
-                <span className="text-stone-400">E-mail:</span>
-                <a href={`mailto:${content?.email}`} className="hover:text-stone-400 transition-colors underline underline-offset-4 decoration-stone-200">
-                  {content?.email}
-                </a>
-              </p>
-              <p className="flex items-center gap-3">
-                <Phone size={12} className="text-stone-400" />
-                <span className="text-stone-400">Telefon:</span>
-                <a href={`tel:${content?.phone?.replace(/\s/g, '')}`} className="hover:text-stone-400 transition-colors">
-                  {content?.phone}
-                </a>
-              </p>
-            </div>
-          </div>
+            {/* Meriter */}
+            <Reveal delay={150}>
+              <div className="mt-8">
+                <div className="flex gap-6 border-b border-stone-200 sm:gap-10">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveTab(cat)}
+                      className={`-mb-px border-b pb-2.5 text-[10px] uppercase tracking-[0.25em] transition-colors duration-300 ${
+                        activeTab === cat
+                          ? 'border-black text-stone-900'
+                          : 'border-transparent text-stone-400 hover:text-stone-600'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
 
-          {/* TAB SECTION */}
-          <div className="space-y-2">
-            <div className="flex gap-8">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveTab(cat)}
-                  className={`pb-3 text-[10px] uppercase tracking-[0.2em] transition-all duration-300 relative ${activeTab === cat ? "text-stone-500" : "text-stone-300 hover:text-stone-400"
-                    }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <div className="min-h-[100px]">
-              <div
-                key={activeTab}
-                className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-700 ease-out"
-              >
-                {activeItems.length > 0 ? (
-                  activeItems.map((item) => (
-                    <div key={item.id} className="group">
-                      <p className="text-stone-600 text-sm font-medium italic tracking-[0.1em]">{item.title}</p>
-                      <p className="text-stone-500 text-xs italic">{item.subtitle}</p>
+                <div className="min-h-[90px] pt-5">
+                  {isDataFetching ? (
+                    <div className="space-y-4">
+                      <div className="h-3 w-2/3 animate-pulse bg-stone-200/60" />
+                      <div className="h-3 w-1/2 animate-pulse bg-stone-200/60" />
                     </div>
-                  ))
-                ) : (
-                  <p className="text-stone-400 text-xs italic py-2">Ingen information tillgänglig än.</p>
-                )}
+                  ) : (
+                    <div
+                      key={activeTab}
+                      className="space-y-4 animate-in fade-in slide-in-from-left-2 duration-500"
+                    >
+                      {activeItems.length > 0 ? (
+                        activeItems.map((item) => (
+                          <div key={item.id}>
+                            <p className="text-sm text-stone-800">{item.title}</p>
+                            {item.subtitle && (
+                              <p className="mt-1 text-xs font-light italic text-stone-400">
+                                {item.subtitle}
+                              </p>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs font-light italic text-stone-400">
+                          Information uppdateras snart.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
-
         </div>
       </div>
     </section>
+  );
+}
+
+function Portrait({
+  image,
+  alt,
+  className = '',
+}: {
+  image?: { url: string; alt: string };
+  alt: string;
+  className?: string;
+}) {
+  const [loaded, setLoaded] = useState(false);
+
+  if (!image?.url) return null;
+
+  return (
+    <div className={`relative ${className}`}>
+      <div
+        className="absolute -bottom-3 -left-3 hidden h-full w-full border border-stone-300/70 md:block"
+        aria-hidden="true"
+      />
+      <div className="relative overflow-hidden bg-stone-50">
+        <img
+          src={image.url}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          className={`aspect-[4/5] w-full object-cover transition-opacity duration-1000 ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/services";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/services';
+import { SectionDivider } from '../divider';
+import { Reveal } from '../reveal';
+import { SectionHeading } from '../section-heading';
 
 const FALLBACK_TITLE = "Välkomna hit";
 const FALLBACK_TEXT =
@@ -16,16 +19,27 @@ export function WelcomeSection() {
   });
 
   return (
-    <div id="valkommen" className="max-w-3xl mx-auto px-6 text-center scroll-mt-36 md:scroll-mt-28 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
-      <p className="text-[11px] uppercase tracking-[0.4em] text-stone-400 mb-4">
-        Bröllopsfotograf i Skåne
-      </p>
-      <h1 className="text-3xl md:text-5xl font-light tracking-wide text-stone-900 mb-6">
-        {content?.title || FALLBACK_TITLE}
-      </h1>
-      <p className="text-stone-500 font-light leading-relaxed text-sm md:text-base whitespace-pre-line">
-        {content?.text || FALLBACK_TEXT}
-      </p>
-    </div>
+    <section id="valkommen" className="scroll-mt-24 py-12 md:scroll-mt-28 md:py-16">
+      <div className="mx-auto max-w-3xl px-6 text-center">
+        <Reveal>
+          <SectionHeading
+            eyebrow="Välkommen"
+            title={content?.title || FALLBACK_TITLE}
+          />
+        </Reveal>
+
+        <Reveal delay={120}>
+          <p className="mx-auto mt-6 max-w-2xl whitespace-pre-line text-[15px] font-light leading-relaxed text-stone-600 md:text-base">
+            {content?.text || FALLBACK_TEXT}
+          </p>
+        </Reveal>
+
+        <Reveal delay={220}>
+          <div className="mt-10 flex justify-center">
+            <SectionDivider />
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }

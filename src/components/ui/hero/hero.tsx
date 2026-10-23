@@ -36,17 +36,17 @@ export function Hero({ photos, isLoading }: HeroProps) {
       )}
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
-        <span className="mb-7 text-[11px] uppercase tracking-[0.5em] text-white/65">
+        <span className="mb-7 text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)]">
           Bröllopsfotograf · Skåne
         </span>
 
-        <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
+        <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
           Myelie Lendelund
         </h1>
 
         <span className="my-7 h-px w-16 bg-white/40" aria-hidden="true" />
 
-        <p className="mb-11 max-w-xl text-sm font-light italic leading-relaxed text-white/85 md:text-base">
+        <p className="mb-11 max-w-xl text-sm font-light italic leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_20px_rgba(0,0,0,0.6)] md:text-base">
           Äkta ögonblick, varsamt bevarade
         </p>
 
@@ -61,7 +61,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
       <button
         onClick={() => scrollToSection('valkommen')}
         aria-label="Scrolla vidare"
-        className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 text-white/60 transition-colors duration-300 hover:text-white motion-safe:animate-bounce"
+        className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 text-white/65 drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-colors duration-300 hover:text-white motion-safe:animate-bounce"
       >
         <ChevronDown size={22} strokeWidth={1.25} />
       </button>
@@ -93,10 +93,10 @@ function HeroStrip({
           loaded ? 'scale-100 opacity-100' : 'scale-[1.06] opacity-0'
         }`}
       />
-      {/* Only the centre strip is darkened so the side photos stay bright */}
+      {/* Only the centre strip is darkened; the side photos stay untouched */}
       {darkened && (
         <div
-          className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65"
+          className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30"
           aria-hidden="true"
         />
       )}

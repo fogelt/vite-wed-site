@@ -50,20 +50,12 @@ export function Hero({ photos, isLoading }: HeroProps) {
           Äkta ögonblick, varsamt bevarade
         </p>
 
-        <div className="flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row">
-          <button
-            onClick={() => scrollToSection('galleri')}
-            className="w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
-          >
-            Se galleriet
-          </button>
-          <button
-            onClick={() => scrollToSection('kontakt')}
-            className="w-full border border-white/35 px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-white/90 transition-colors duration-300 hover:border-white/70 hover:bg-white/10 sm:w-auto"
-          >
-            Berätta om era planer
-          </button>
-        </div>
+        <button
+          onClick={() => scrollToSection('galleri')}
+          className="w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
+        >
+          Se galleriet
+        </button>
       </div>
 
       <button

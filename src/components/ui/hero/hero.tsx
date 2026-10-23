@@ -21,13 +21,13 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const hasPhotos = !isLoading && Boolean(center?.url);
 
   return (
-    <section className="relative flex h-[88vh] max-h-[920px] min-h-[560px] w-full items-center justify-center overflow-hidden bg-white">
+    <section className="relative flex h-[78vh] max-h-[820px] min-h-[520px] w-full items-center justify-center overflow-hidden bg-white">
       {hasPhotos ? (
         /* The triptych */
         <div className="absolute inset-0" aria-hidden="true">
           <div className="flex h-full w-full gap-2">
             <HeroStrip photo={left} className="hidden h-full w-[22%] md:block" />
-            <HeroStrip photo={center} className="h-full min-w-0 flex-1" />
+            <HeroStrip photo={center} darkened className="h-full min-w-0 flex-1" />
             <HeroStrip photo={right} className="hidden h-full w-[22%] md:block" />
           </div>
         </div>
@@ -77,7 +77,15 @@ export function Hero({ photos, isLoading }: HeroProps) {
   );
 }
 
-function HeroStrip({ photo, className = '' }: { photo?: HeroPhoto; className?: string }) {
+function HeroStrip({
+  photo,
+  darkened = false,
+  className = '',
+}: {
+  photo?: HeroPhoto;
+  darkened?: boolean;
+  className?: string;
+}) {
   const [loaded, setLoaded] = useState(false);
 
   if (!photo?.url) return null;
@@ -93,11 +101,13 @@ function HeroStrip({ photo, className = '' }: { photo?: HeroPhoto; className?: s
           loaded ? 'scale-100 opacity-100' : 'scale-[1.06] opacity-0'
         }`}
       />
-      {/* Scrim sits on each strip so the cuts between them stay crisp */}
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65"
-        aria-hidden="true"
-      />
+      {/* Only the centre strip is darkened so the side photos stay bright */}
+      {darkened && (
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/65"
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 }

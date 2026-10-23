@@ -2,6 +2,17 @@ import { supabase } from "@/services";
 
 const CLOUD_NAME = "dtscgoycp";
 
+/** Human-friendly alt text per photo tag, for image SEO and accessibility. */
+const TAG_LABELS: Record<string, string> = {
+  weddings_main: "Bröllopsfotografi i Skåne",
+  engagement: "Förlovningsfotografi i Skåne",
+};
+
+function photoAlt(tag: string) {
+  if (tag === "about") return "Myelie Lendelund, bröllopsfotograf i Skåne";
+  return `${TAG_LABELS[tag] ?? "Fotografi i Skåne"} av Myelie Lendelund`;
+}
+
 interface CloudinaryResource {
   public_id: string;
   format: string;
@@ -67,7 +78,7 @@ export async function fetchPhotosByTag(tag: string | null) {
         return {
           id: item.id,
           url: item.url,
-          alt: `${tag} av Myelie Lendelund`,
+          alt: photoAlt(tag),
           description: descriptionText,
           photo_variants: item.photo_variants?.sort((a: any, b: any) => a.position - b.position) || []
         };
@@ -77,7 +88,7 @@ export async function fetchPhotosByTag(tag: string | null) {
         .map((r: CloudinaryResource) => ({
           id: r.public_id,
           url: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,c_fill,g_faces/${r.public_id}.${r.format}`,
-          alt: `${tag} av Myelie Lendelund`,
+          alt: photoAlt(tag),
           description: "",
           photo_variants: []
         }))

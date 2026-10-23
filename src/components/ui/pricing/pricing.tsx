@@ -79,7 +79,7 @@ export function PricingSection() {
                         )}`}
                         className="mt-7 inline-flex w-full items-center justify-center border border-stone-300 py-3.5 text-[10px] uppercase tracking-[0.3em] text-stone-800 transition-colors duration-300 hover:border-stone-500 hover:bg-stone-50"
                       >
-                        Berätta om era planer
+                        Boka paketet
                       </a>
                     </div>
                   </article>

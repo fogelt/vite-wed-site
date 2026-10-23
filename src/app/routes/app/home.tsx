@@ -5,9 +5,9 @@ import { useSEO } from '@/utils';
 
 export default function HomeRoute() {
   useSEO({
-    title: 'Bröllopsfotograf | Professionell Bröllopslfotografering i Skåne',
-    description: 'Bröllopsfotograf specialiserad på att fånga känslan och skönheten i era viktiga stunder. Serverar Malmö, Lund, Helsingborg, Landskrona och övriga Södra Sverige.',
-    keywords: 'bröllopsfotograf, bröllop fotograf, bröllopsfotografering, bröllopsfotograf Malmö, bröllopsfotograf Lund, Skåne bröllopsfotograf',
+    title: 'Bröllopsfotograf i Skåne | Myelie Lendelund',
+    description: 'Bröllopsfotograf i Skåne som fångar äkta känslor och de små ögonblicken. Se portfolio och bröllopspaket, eller hör av dig för att boka er stora dag.',
+    keywords: 'bröllopsfotograf Skåne, bröllopsfotograf, bröllopsfotografering Skåne, förlovningsfotograf Skåne',
     canonical: 'https://fogelt.github.io/vite-wed-site/'
   });
   const { data: photos = [], isLoading, error } = useQuery({

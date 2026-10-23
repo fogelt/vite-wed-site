@@ -27,7 +27,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
         <div className="absolute inset-0" aria-hidden="true">
           <div className="flex h-full w-full gap-2">
             <HeroStrip photo={left} className="hidden h-full w-[22%] md:block" />
-            <HeroStrip photo={center} darkened className="h-full min-w-0 flex-1" />
+            <HeroStrip photo={center} darkened priority className="h-full min-w-0 flex-1" />
             <HeroStrip photo={right} className="hidden h-full w-[22%] md:block" />
           </div>
         </div>
@@ -41,6 +41,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
         </span>
 
         <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
+          <span className="sr-only">Bröllopsfotograf i Skåne — </span>
           Myelie Lendelund
         </h1>
 
@@ -72,10 +73,12 @@ export function Hero({ photos, isLoading }: HeroProps) {
 function HeroStrip({
   photo,
   darkened = false,
+  priority = false,
   className = '',
 }: {
   photo?: HeroPhoto;
   darkened?: boolean;
+  priority?: boolean;
   className?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
@@ -88,6 +91,7 @@ function HeroStrip({
         key={photo.url}
         src={photo.url}
         alt={photo.alt || 'Bröllopsfotograf Myelie Lendelund'}
+        fetchPriority={priority ? 'high' : 'auto'}
         onLoad={() => setLoaded(true)}
         className={`h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${
           loaded ? 'scale-100 opacity-100' : 'scale-[1.06] opacity-0'

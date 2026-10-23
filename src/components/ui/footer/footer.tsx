@@ -13,7 +13,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <p className="text-xs font-light uppercase tracking-[0.3em] text-stone-900">
-              Fotograf <span className="font-medium">Myelie Lendelund</span>
+              Bröllopsfotograf <span className="font-medium">Myelie Lendelund</span>
             </p>
             <p className="mt-3 max-w-xs text-sm font-light leading-relaxed text-stone-500">
               Bröllopsfotograf i Skåne — äkta känslor, varsamt bevarade.
@@ -57,7 +57,7 @@ export function Footer() {
                   +46 72 16 82 019
                 </a>
               </li>
-              <li>Malmö · Skåne</li>
+              <li>Skåne</li>
             </ul>
 
             <div className="mt-4 flex gap-5 text-gray-500 md:justify-end">

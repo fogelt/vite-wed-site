@@ -28,7 +28,7 @@ export function Header() {
         <div className="relative">
           <button onClick={scrollToTop} className="group text-left" aria-label="Till toppen">
             <span className="text-[10px] font-light uppercase tracking-[0.2em] text-stone-900 transition-colors duration-300 group-hover:text-stone-500 sm:text-xs md:text-base md:tracking-[0.3em]">
-              Fotograf <span className="font-medium">Myelie Lendelund</span>
+              Bröllopsfotograf <span className="font-medium">Myelie Lendelund</span>
             </span>
           </button>
 

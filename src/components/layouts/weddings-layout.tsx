@@ -33,25 +33,25 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
     if (index !== -1) setSelectedIndex(index);
   };
 
-  const galleryPhotos = photos.slice(3);
+  const introPhotos = photos.slice(3, 11);
+  const galleryPhotos = photos.slice(11);
   const showGallery = isLoading || galleryPhotos.length > 0;
 
   return (
     <div className="flex w-full flex-col bg-white">
       <Hero photos={photos} isLoading={isLoading} />
 
-      <WelcomeSection />
-
-      {showGallery && (
-        <section id="galleri" className="scroll-mt-24 pb-12 pt-6 md:scroll-mt-28 md:pb-16 md:pt-10">
-          <ImageContainer
-            photos={galleryPhotos}
-            variant="weddings"
-            onItemClick={openPhoto}
-            isLoading={isLoading}
-          />
-        </section>
-      )}
+      {/* Välkommen: the welcome text together with the first eight photos */}
+      <section id="valkommen" className="scroll-mt-24 pb-12 md:scroll-mt-28 md:pb-16">
+        <WelcomeSection />
+        <ImageContainer
+          photos={introPhotos}
+          variant="weddings"
+          onItemClick={openPhoto}
+          isLoading={isLoading}
+          skeletonCount={8}
+        />
+      </section>
 
       <PricingSection />
 
@@ -65,6 +65,18 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
             : undefined
         }
       />
+
+      {/* Galleriet fortsätter efter förlovningen */}
+      {showGallery && (
+        <section id="galleri" className="scroll-mt-24 pb-12 pt-2 md:scroll-mt-28 md:pb-16 md:pt-6">
+          <ImageContainer
+            photos={galleryPhotos}
+            variant="weddings"
+            onItemClick={openPhoto}
+            isLoading={isLoading}
+          />
+        </section>
+      )}
 
       <ContactCTA />
 

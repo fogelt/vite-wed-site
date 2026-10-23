@@ -5,9 +5,10 @@ export interface NavItem {
 
 /** Sections that appear in the header navigation, in page order. */
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Galleri", target: "galleri" },
+  { label: "Välkommen", target: "valkommen" },
   { label: "Priser", target: "priser" },
   { label: "Förlovning", target: "forlovning" },
+  { label: "Galleri", target: "galleri" },
   { label: "Kontakt", target: "kontakt" },
 ];
 

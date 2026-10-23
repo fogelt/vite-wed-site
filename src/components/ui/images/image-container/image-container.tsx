@@ -16,6 +16,7 @@ interface ImageContainerProps {
   onItemClick?: (photo: Photo) => void;
   renderItem?: (photo: Photo, index: number, className: string) => React.ReactNode;
   isLoading?: boolean;
+  skeletonCount?: number;
 }
 
 /**
@@ -29,10 +30,11 @@ export function ImageContainer({
   variant = 'default',
   onItemClick,
   renderItem,
-  isLoading
+  isLoading,
+  skeletonCount = 11,
 }: ImageContainerProps) {
   const displayPhotos = isLoading
-    ? Array.from({ length: 11 }).map((_, i) => ({ id: `skeleton-${i}`, url: '' })) as Photo[]
+    ? Array.from({ length: skeletonCount }).map((_, i) => ({ id: `skeleton-${i}`, url: '' })) as Photo[]
     : photos;
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 

@@ -19,7 +19,7 @@ export function WelcomeSection() {
   });
 
   return (
-    <section id="valkommen" className="scroll-mt-24 py-12 md:scroll-mt-28 md:py-16">
+    <div className="py-12 md:py-16">
       <div className="mx-auto max-w-3xl px-6 text-center">
         <Reveal>
           <SectionHeading
@@ -40,6 +40,6 @@ export function WelcomeSection() {
           </div>
         </Reveal>
       </div>
-    </section>
+    </div>
   );
 }

@@ -73,7 +73,7 @@ export function EngagementSection({ image }: EngagementSectionProps) {
                     loading="lazy"
                     decoding="async"
                     onLoad={() => setImageLoaded(true)}
-                    className={`aspect-[4/5] w-full object-cover transition-opacity duration-1000 ${
+                    className={`h-auto w-full transition-opacity duration-1000 ${
                       imageLoaded ? 'opacity-100' : 'opacity-0'
                     }`}
                   />

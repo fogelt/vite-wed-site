@@ -30,8 +30,7 @@ export function ContactCTA() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-relaxed text-stone-600 md:text-base">
-            Berätta om era planer så tar vi det därifrån — datum, plats och era tankar.
-            Jag svarar alltid personligt, oftast inom ett par dagar.
+            Berätta om era planer så tar vi det därifrån. datum, plats och era tankar.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">

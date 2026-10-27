@@ -8,7 +8,7 @@ export default function HomeRoute() {
     title: 'Bröllopsfotograf i Skåne | Myelie Lendelund',
     description: 'Bröllopsfotograf i Skåne som fångar äkta känslor och de små ögonblicken. Se portfolio och bröllopspaket, eller hör av dig för att boka er stora dag.',
     keywords: 'bröllopsfotograf Skåne, bröllopsfotograf, bröllopsfotografering Skåne, förlovningsfotograf Skåne',
-    canonical: 'https://fogelt.github.io/vite-wed-site/'
+    canonical: 'https://myeliebrollopsfoto.se/'
   });
   const { data: photos = [], isLoading, error } = useQuery({
     queryKey: ['photos', 'weddings_main'],

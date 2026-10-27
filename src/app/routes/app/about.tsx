@@ -8,7 +8,7 @@ export default function AboutRoute() {
     title: 'Om mig | Bröllopsfotograf Myelie Lendelund',
     description: 'Lär känna Myelie Lendelund — bröllopsfotograf i Skåne som fångar äkta känslor, utbildningar, utställningar och kontaktuppgifter.',
     keywords: 'bröllopsfotograf, om mig, Myelie Lendelund, kontakt',
-    canonical: 'https://fogelt.github.io/vite-wed-site/om-mig',
+    canonical: 'https://myeliebrollopsfoto.se/om-mig',
   });
   const { data: photos = [] } = useQuery({
     queryKey: ['photos', 'about'],

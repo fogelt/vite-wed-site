@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fogelt.github.io/vite-wed-site/sitemap.xml
+Sitemap: https://myeliebrollopsfoto.se/sitemap.xml

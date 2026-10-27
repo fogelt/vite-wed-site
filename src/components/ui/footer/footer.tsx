@@ -16,7 +16,7 @@ export function Footer() {
               Bröllopsfotograf <span className="font-medium">Myelie Lendelund</span>
             </p>
             <p className="mt-3 max-w-xs text-sm font-light leading-relaxed text-stone-500">
-              Bröllopsfotograf i Skåne.
+              Bröllopsfotograf i Skåne
             </p>
           </div>
 

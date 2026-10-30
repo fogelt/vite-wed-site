@@ -1,3 +1,5 @@
+import { useImageLoaded } from '@/utils/use-image-loaded';
+
 interface ImageCardProps {
   url: string;
   alt?: string;
@@ -10,7 +12,7 @@ interface ImageCardProps {
 }
 
 const DEFAULT_IMG_CLASS =
-  'h-full w-full object-cover object-[center_70%] transition-transform duration-700 ease-out group-hover:scale-[1.04]';
+  'relative h-full w-full object-cover object-[center_70%] transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.04]';
 
 export function ImageCard({
   url,
@@ -19,9 +21,16 @@ export function ImageCard({
   imgClassName,
   style,
   onClick,
-  onLoad,
+  onLoad: onLoadProp,
   has_variant,
 }: ImageCardProps) {
+  const image = useImageLoaded(url);
+
+  const handleLoad = () => {
+    image.onLoad();
+    onLoadProp?.();
+  };
+
   return (
     <div
       className={`group relative overflow-hidden ${className}`}
@@ -44,13 +53,24 @@ export function ImageCard({
           </div>
         </div>
       )}
+
+      {/* Very dim skeleton in the card's shape until the photo fades in. */}
+      <div
+        className={`pointer-events-none absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${
+          image.loaded ? 'opacity-0' : 'animate-pulse'
+        }`}
+        aria-hidden="true"
+      />
+
       <img
+        ref={image.ref}
         src={url}
         alt={alt || "Fotografi Myelie Lendelund"}
         loading="lazy"
         decoding="async"
-        onLoad={onLoad}
-        className={imgClassName ?? DEFAULT_IMG_CLASS}
+        onLoad={handleLoad}
+        onError={image.onError}
+        className={`${imgClassName ?? DEFAULT_IMG_CLASS} ${image.loaded ? 'opacity-100' : 'opacity-0'}`}
       />
       <div className="absolute inset-0 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
     </div>

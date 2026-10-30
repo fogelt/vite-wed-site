@@ -1,3 +1,5 @@
+export * from './cloudinary'
+export * from './use-image-loaded'
 export * from './scroll-to-top'
 export * from './scroll'
 export { useSEO } from './use-seo'

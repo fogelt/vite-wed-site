@@ -1,12 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import { Header, Footer } from '@/components/ui';
 import { ScrollToTop } from '@/utils';
-import { AnalyticsTracker } from '@/components/analytics';
 
 export default function AppRoot() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <AnalyticsTracker />
       <ScrollToTop />
       <Header />
       <main className="flex-grow">

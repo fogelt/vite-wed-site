@@ -31,7 +31,9 @@ export function Reveal({ children, className = '', delay = 0 }: RevealProps) {
           observer.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -48px 0px' }
+      // A low threshold means tall sections still reveal even when they can
+      // never fill 12% of the screen.
+      { threshold: 0.01, rootMargin: '0px 0px -40px 0px' }
     );
 
     observer.observe(el);
@@ -42,8 +44,8 @@ export function Reveal({ children, className = '', delay = 0 }: RevealProps) {
     <div
       ref={ref}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-      className={`transition-all duration-1000 ease-out motion-reduce:transition-none ${
-        visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+      className={`transition-all duration-700 ease-out motion-reduce:transition-none ${
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${className}`}
     >
       {children}

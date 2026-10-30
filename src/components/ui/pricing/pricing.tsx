@@ -42,7 +42,7 @@ export function PricingSection() {
         <div className="mt-10 grid grid-cols-1 items-stretch gap-6 md:mt-14 md:grid-cols-3 md:gap-8">
           {isLoading
             ? [...Array(3)].map((_, i) => (
-                <div key={i} className="h-[400px] animate-pulse bg-stone-200" />
+                <div key={i} className="h-[400px] animate-pulse bg-neutral-100" />
               ))
             : packages?.map((pkg, index) => (
                 <Reveal key={pkg.id} delay={index * 120} className="h-full">

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ImageCard } from '@/components/ui';
 import { Images } from 'lucide-react';
 
@@ -36,11 +35,6 @@ export function ImageContainer({
   const displayPhotos = isLoading
     ? Array.from({ length: skeletonCount }).map((_, i) => ({ id: `skeleton-${i}`, url: '' })) as Photo[]
     : photos;
-  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
-
-  const handleImageLoad = (id: string) => {
-    setLoadedImages((prev) => ({ ...prev, [id]: true }));
-  };
 
   const getSizingClasses = (index: number) => {
     if (variant === 'reportage') {
@@ -98,33 +92,19 @@ export function ImageContainer({
           return (
             <div
               key={photo.id}
-              className={`${sizingClass} bg-stone-200 animate-pulse fade-in`}
+              className={`${sizingClass} bg-neutral-100 animate-pulse fade-in`}
             />
           );
         }
-        const hasLoaded = loadedImages[photo.id];
-
         if (renderItem) return renderItem(photo, index, sizingClass);
 
         return (
-          <div
-            key={photo.id}
-            className={`${sizingClass} overflow-hidden bg-stone-50 transition-opacity duration-1000 ${hasLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-          >
+          <div key={photo.id} className={`${sizingClass} overflow-hidden bg-neutral-100`}>
             <ImageCard
               url={photo.url}
               alt={photo.alt}
-              className={`w-full object-cover ${variant === 'reportage' ? 'h-auto md:h-full' : 'h-full'
-                } ${hasLoaded
-                  ? 'animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both'
-                  : 'opacity-0'
-                }`}
-              style={{
-                animationDelay: `${index * 150}ms`,
-              }}
+              className={`w-full object-cover ${variant === 'reportage' ? 'h-auto md:h-full' : 'h-full'}`}
               onClick={() => onItemClick?.(photo)}
-              onLoad={() => handleImageLoad(photo.id)}
               has_variant={photo.photo_variants?.length ? <Images size={15} /> : null}
             />
           </div>

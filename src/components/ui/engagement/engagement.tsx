@@ -66,7 +66,7 @@ export function EngagementSection({ image }: EngagementSectionProps) {
                   className="absolute -bottom-4 -right-4 hidden h-full w-full border border-stone-300/70 md:block"
                   aria-hidden="true"
                 />
-                <div className="relative overflow-hidden bg-stone-50">
+                <div className="relative overflow-hidden bg-neutral-100">
                   <img
                     src={image.url}
                     alt={image.alt}

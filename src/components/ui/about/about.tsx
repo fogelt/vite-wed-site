@@ -107,8 +107,8 @@ export function AboutSection({ image }: AboutSectionProps) {
                 <div className="min-h-[90px] pt-5">
                   {isDataFetching ? (
                     <div className="space-y-4">
-                      <div className="h-3 w-2/3 animate-pulse bg-stone-200/60" />
-                      <div className="h-3 w-1/2 animate-pulse bg-stone-200/60" />
+                      <div className="h-3 w-2/3 animate-pulse bg-neutral-100" />
+                      <div className="h-3 w-1/2 animate-pulse bg-neutral-100" />
                     </div>
                   ) : (
                     <div
@@ -162,7 +162,7 @@ function Portrait({
         className="absolute -bottom-3 -left-3 hidden h-full w-full border border-stone-300/70 md:block"
         aria-hidden="true"
       />
-      <div className="relative overflow-hidden bg-stone-50">
+      <div className="relative overflow-hidden bg-neutral-100">
         <img
           src={image.url}
           alt={alt}

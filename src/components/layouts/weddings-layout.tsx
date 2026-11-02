@@ -41,9 +41,13 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
     <div className="flex w-full flex-col bg-white">
       <Hero photos={photos} isLoading={isLoading} />
 
-      {/* Välkommen: the welcome text together with the first eight photos */}
-      <section id="valkommen" className="scroll-mt-24 pb-12 md:scroll-mt-28 md:pb-16">
+      {/* Välkommen: the welcome text */}
+      <section id="valkommen" className="scroll-mt-24 md:scroll-mt-28">
         <WelcomeSection />
+      </section>
+
+      {/* De första åtta bilderna har en egen sektion så man kan hoppa direkt dit */}
+      <section id="utvalda-bilder" className="scroll-mt-24 pb-12 md:scroll-mt-28 md:pb-16">
         <ImageContainer
           photos={introPhotos}
           variant="weddings"

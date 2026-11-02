@@ -38,7 +38,7 @@ export function ImageContainer({
 
   const getSizingClasses = (index: number) => {
     if (variant === 'reportage') {
-      return "xl:h-[265px] w-auto flex-grow";
+      return "w-full h-auto flex-grow md:w-auto xl:h-[265px]";
     }
 
     if (variant === 'weddings') {
@@ -50,17 +50,17 @@ export function ImageContainer({
       switch (index % 11) {
         case 2:
         case 5: // the landscape in the two 4-photo rows (||-| and |-||)
-          return 'h-[60vh] w-full md:h-auto md:aspect-[3/2] md:w-[calc(43%_-_11px)]';
+          return 'h-auto w-full md:aspect-[3/2] md:w-[calc(43%_-_11px)]';
 
         case 8:
         case 9: // the two landscapes in the closing --| row
-          return 'h-[60vh] w-full md:h-auto md:aspect-[3/2] md:w-[calc(41%_-_7px)]';
+          return 'h-auto w-full md:aspect-[3/2] md:w-[calc(41%_-_7px)]';
 
         case 10: // the portrait that closes the --| row
-          return 'h-[60vh] w-full md:h-auto md:aspect-[2/3] md:w-[calc(18%_-_3.5px)]';
+          return 'h-auto w-full md:aspect-[2/3] md:w-[calc(18%_-_3.5px)]';
 
         default: // the portraits in the two 4-photo rows
-          return 'h-[60vh] w-full md:h-auto md:aspect-[2/3] md:w-[calc(19%_-_5px)]';
+          return 'h-auto w-full md:aspect-[2/3] md:w-[calc(19%_-_5px)]';
       }
     }
 
@@ -69,16 +69,16 @@ export function ImageContainer({
 
     switch (pos) {
       case 1: case 2: case 3:
-        return base + "h-[70vh] w-full md:w-[28%]";
+        return base + " w-full md:w-[28%] md:h-[70vh]";
 
       case 4: case 5: case 7: case 9: case 10:
-        return base + "h-[60vh] w-full md:w-[45%]";
+        return base + " w-full md:w-[45%] md:h-[60vh]";
 
       case 6: case 8:
-        return base + "h-[60vh] w-full md:w-[18%]";
+        return base + " w-full md:w-[18%] md:h-[60vh]";
 
       default:
-        return base + "h-[25em] w-[30%]";
+        return base + " w-full md:w-[30%] md:h-[25em]";
     }
   };
 
@@ -92,7 +92,7 @@ export function ImageContainer({
           return (
             <div
               key={photo.id}
-              className={`${sizingClass} bg-neutral-100 animate-pulse fade-in`}
+              className={`${sizingClass} aspect-[3/2] bg-neutral-100 animate-pulse fade-in`}
             />
           );
         }
@@ -103,7 +103,7 @@ export function ImageContainer({
             <ImageCard
               url={photo.url}
               alt={photo.alt}
-              className={`w-full object-cover ${variant === 'reportage' ? 'h-auto md:h-full' : 'h-full'}`}
+              className={`w-full object-cover h-auto ${variant === 'reportage' ? 'xl:h-full' : 'md:h-full'}`}
               onClick={() => onItemClick?.(photo)}
               has_variant={photo.photo_variants?.length ? <Images size={15} /> : null}
             />

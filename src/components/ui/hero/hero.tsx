@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cloudinaryImage, scrollToSection, useImageLoaded } from '@/utils';
 
@@ -22,6 +23,8 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const center = photos.length >= 2 ? photos[1] : photos[0];
   const right = photos.length >= 3 ? photos[2] : undefined;
   const hasPhotos = !isLoading && Boolean(center?.url);
+  const [centerVisible, setCenterVisible] = useState(false);
+  const handleCenterVisible = useCallback(() => setCenterVisible(true), []);
 
   return (
     <section className="relative flex h-[78vh] max-h-[820px] min-h-[520px] w-full items-center justify-center overflow-hidden bg-white">
@@ -48,6 +51,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
               width={CENTER_IMAGE_WIDTH}
               darkened
               priority
+              onVisible={handleCenterVisible}
               className="h-full min-w-0 flex-1"
             />
             <HeroStrip
@@ -59,9 +63,13 @@ export function Hero({ photos, isLoading }: HeroProps) {
         </div>
       )}
 
-      {/* Soft scrim so the white type stays legible over the skeleton and the photo. */}
+      {/* Soft scrim so the white type stays legible over the photo.
+          It fades in only once the centre photo (or its blur) is visible, so it
+          never darkens the loading skeleton. */}
       <div
-        className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(58%_52%_at_50%_50%,rgba(0,0,0,0.26),transparent_76%)]"
+        className={`pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(58%_52%_at_50%_50%,rgba(0,0,0,0.26),transparent_76%)] transition-opacity duration-700 ${
+          centerVisible ? 'opacity-100' : 'opacity-0'
+        }`}
         aria-hidden="true"
       />
 
@@ -105,6 +113,7 @@ function HeroStrip({
   width,
   darkened = false,
   priority = false,
+  onVisible,
   className = '',
 }: {
   photo?: HeroPhoto;
@@ -112,6 +121,8 @@ function HeroStrip({
   darkened?: boolean;
   /** Load immediately. Side strips stay lazy so they are not fetched on mobile. */
   priority?: boolean;
+  /** Called once the blurred preview or the full photo is visible. */
+  onVisible?: () => void;
   className?: string;
 }) {
   const src = photo?.url ? cloudinaryImage(photo.url, { width }) : '';
@@ -119,6 +130,10 @@ function HeroStrip({
   const preview = useImageLoaded(placeholder);
   const image = useImageLoaded(src);
   const visible = preview.loaded || image.loaded;
+
+  useEffect(() => {
+    if (visible) onVisible?.();
+  }, [visible, onVisible]);
 
   if (!photo?.url) return null;
 
@@ -161,10 +176,13 @@ function HeroStrip({
           image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
         }`}
       />
-      {/* Only the centre strip is darkened; the side photos stay untouched */}
+      {/* Only the centre strip is darkened; the side photos stay untouched.
+          Fade it in with the image so it never darkens the skeleton. */}
       {darkened && (
         <div
-          className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30"
+          className={`pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30 transition-opacity duration-700 ${
+            visible ? 'opacity-100' : 'opacity-0'
+          }`}
           aria-hidden="true"
         />
       )}

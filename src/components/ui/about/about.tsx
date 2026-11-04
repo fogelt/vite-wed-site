@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
+import { cloudinaryImage, cloudinarySrcSet } from '@/utils';
 import { Reveal } from '../reveal';
 import { SectionHeading } from '../section-heading';
 
@@ -164,7 +165,9 @@ function Portrait({
       />
       <div className="relative overflow-hidden bg-neutral-100">
         <img
-          src={image.url}
+          src={cloudinaryImage(image.url, { width: 800 })}
+          srcSet={cloudinarySrcSet(image.url, [240, 480, 800])}
+          sizes="(min-width: 768px) 380px, 180px"
           alt={alt}
           loading="lazy"
           decoding="async"

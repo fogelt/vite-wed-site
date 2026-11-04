@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from 'lucide-react';
 import { supabase } from "@/services";
-import { scrollToSection } from "@/utils";
+import { scrollToSection, cloudinaryImage, cloudinarySrcSet } from "@/utils";
 import { Reveal } from '../reveal';
 import { SectionHeading } from '../section-heading';
 
@@ -68,7 +68,9 @@ export function EngagementSection({ image }: EngagementSectionProps) {
                 />
                 <div className="relative overflow-hidden bg-neutral-100">
                   <img
-                    src={image.url}
+                    src={cloudinaryImage(image.url, { width: 1200 })}
+                    srcSet={cloudinarySrcSet(image.url, [600, 900, 1200])}
+                    sizes="(min-width: 768px) 50vw, 100vw"
                     alt={image.alt}
                     loading="lazy"
                     decoding="async"

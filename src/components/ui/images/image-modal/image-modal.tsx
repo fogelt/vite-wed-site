@@ -1,4 +1,6 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { cloudinaryImage, preloadImage, VARIANT_THUMB_WIDTH } from '@/utils';
+import { useImageLoaded } from '@/utils/use-image-loaded';
 
 interface PhotoVariant {
   id: string;
@@ -13,42 +15,112 @@ interface Photo {
   photo_variants?: PhotoVariant[];
 }
 
+export interface ImagePreview {
+  id: string;
+  src: string;
+}
+
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
   photos: Photo[];
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
+  /**
+   * The already-decoded thumbnail the user clicked. It is shown immediately so
+   * the large view opens with zero perceived delay.
+   */
+  preview?: ImagePreview | null;
 }
 
-export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIndex }: ImageModalProps) => {
+/** Width of the sharp image in the large view. */
+const MODAL_IMAGE_WIDTH = 2000;
+
+/** Larger stand-in for the main view when a variant is picked. */
+const VARIANT_PREVIEW_WIDTH = 600;
+
+function preloadVariant(url: string) {
+  preloadImage(cloudinaryImage(url, { width: MODAL_IMAGE_WIDTH }));
+}
+
+/**
+ * Mounts only while open, so the sharp image always re-checks the browser cache
+ * instead of keeping stale loaded state from a previous open.
+ */
+export const ImageModal = (props: ImageModalProps) => {
+  if (!props.isOpen || !props.photos[props.currentIndex]) return null;
+  return <ImageModalContent {...props} />;
+};
+
+const ImageModalContent = ({
+  onClose,
+  photos,
+  currentIndex,
+  setCurrentIndex,
+  preview,
+}: ImageModalProps) => {
   const currentPhoto = photos[currentIndex];
-  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const [activeVariant, setActiveVariant] = useState<string | null>(null);
 
+  const displayUrl = activeVariant ?? currentPhoto.url;
+  const sharpSrc = cloudinaryImage(displayUrl, { width: MODAL_IMAGE_WIDTH });
+  const sharp = useImageLoaded(sharpSrc);
+
+  // Variant images are small, and warming them early is what makes browsing
+  // alternatives instant. Start right away rather than waiting for the main
+  // image, but skip it for visitors who explicitly asked to save data.
   useEffect(() => {
-    if (currentPhoto) setActiveUrl(currentPhoto.url);
-  }, [currentIndex, currentPhoto]);
+    const connection = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (connection?.saveData) return;
 
-  const goNext = useCallback(() => setCurrentIndex((currentIndex + 1) % photos.length), [currentIndex, photos.length, setCurrentIndex]);
-  const goPrev = useCallback(() => setCurrentIndex((currentIndex - 1 + photos.length) % photos.length), [currentIndex, photos.length, setCurrentIndex]);
+    const timer = window.setTimeout(() => {
+      for (const variant of currentPhoto.photo_variants || []) {
+        preloadVariant(variant.url);
+      }
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [currentPhoto]);
+
+  // A new photo always starts on its main image.
+  useEffect(() => {
+    setActiveVariant(null);
+  }, [currentIndex]);
+
+  const goNext = useCallback(
+    () => setCurrentIndex((currentIndex + 1) % photos.length),
+    [currentIndex, photos.length, setCurrentIndex],
+  );
+  const goPrev = useCallback(
+    () => setCurrentIndex((currentIndex - 1 + photos.length) % photos.length),
+    [currentIndex, photos.length, setCurrentIndex],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight') goNext();
       if (e.key === 'ArrowLeft') goPrev();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, goNext, goPrev]);
-
-  if (!isOpen || !currentPhoto) return null;
+  }, [onClose, goNext, goPrev]);
 
   const allRelated = [
     { id: 'main', url: currentPhoto.url },
-    ...(currentPhoto.photo_variants || [])
+    ...(currentPhoto.photo_variants || []),
   ];
+
+  // Reuse the thumbnail the user just clicked for an instant first paint. When
+  // a variant is picked, its (already fetched) strip thumbnail does the same.
+  const instantSrc = activeVariant
+    ? cloudinaryImage(activeVariant, { width: VARIANT_PREVIEW_WIDTH })
+    : preview?.id === currentPhoto.id
+      ? preview.src
+      : null;
+
+  // Tiny blur fallback, e.g. after navigating with the arrow keys.
+  const placeholderSrc = instantSrc ?? cloudinaryImage(displayUrl, { blur: true });
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 transition-all duration-300">
@@ -85,11 +157,14 @@ export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIn
           {allRelated.length > 1 && (
             <div className="absolute -top-16 left-1/2 z-[120] flex -translate-x-1/2 gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
               {allRelated.map((img) => {
-                const isActive = activeUrl === img.url;
+                const isActive = displayUrl === img.url;
                 return (
                   <button
                     key={img.id}
-                    onClick={() => setActiveUrl(img.url)}
+                    onClick={() => setActiveVariant(img.url === currentPhoto.url ? null : img.url)}
+                    onPointerEnter={() => preloadVariant(img.url)}
+                    onFocus={() => preloadVariant(img.url)}
+                    onPointerDown={() => preloadVariant(img.url)}
                     aria-label="Visa variant"
                     className="transition-transform active:scale-95"
                   >
@@ -100,7 +175,13 @@ export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIn
                         : 'border-white/20 opacity-40 blur-[0.5px] hover:opacity-100 hover:blur-0'
                       }
                     `}>
-                      <img src={img.url} className="h-full w-full object-cover" alt="" />
+                      <img
+                        src={cloudinaryImage(img.url, { width: VARIANT_THUMB_WIDTH })}
+                        loading="eager"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                        alt=""
+                      />
                     </div>
                   </button>
                 );
@@ -108,13 +189,30 @@ export const ImageModal = ({ isOpen, onClose, photos, currentIndex, setCurrentIn
             </div>
           )}
 
-          {/* Main Image */}
-          <img
-            key={activeUrl}
-            src={activeUrl || currentPhoto.url}
-            alt={currentPhoto?.alt || ''}
-            className="max-h-[65vh] max-w-full object-contain shadow-2xl animate-in fade-in zoom-in-95 duration-500 md:max-h-[70vh]"
-          />
+          {/* Main Image. The placeholder is in normal flow so it defines the
+              layout box, and the box is driven by the viewport height so even a
+              small variant thumbnail scales up instead of rendering tiny. */}
+          <div className="relative h-[65vh] max-w-full animate-in fade-in zoom-in-95 duration-500 md:h-[70vh] md:max-w-[calc(100vw-10rem)] max-w-[calc(100vw-2rem)]">
+            <img
+              src={placeholderSrc}
+              alt=""
+              aria-hidden="true"
+              className="h-full w-auto max-w-full object-contain drop-shadow-2xl"
+            />
+            <img
+              ref={sharp.ref}
+              src={sharpSrc}
+              alt={currentPhoto.alt || ''}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              onLoad={sharp.onLoad}
+              onError={sharp.onError}
+              className={`absolute inset-0 h-full w-full object-contain drop-shadow-2xl transition-opacity duration-300 ${
+                sharp.loaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          </div>
         </div>
 
         <button

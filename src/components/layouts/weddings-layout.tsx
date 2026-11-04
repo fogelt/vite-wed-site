@@ -21,6 +21,7 @@ interface Photo {
 
 export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoading?: boolean }) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [preview, setPreview] = useState<{ id: string; src: string } | null>(null);
 
   // Image for the engagement section (uploaded under the "engagement" tag)
   const { data: engagementPhotos = [] } = useQuery({
@@ -28,9 +29,11 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
     queryFn: () => fetchPhotosByTag('engagement'),
   });
 
-  const openPhoto = (photo: Photo) => {
+  const openPhoto = (photo: Photo, previewSrc?: string) => {
     const index = photos.findIndex((p) => p.id === photo.id);
-    if (index !== -1) setSelectedIndex(index);
+    if (index === -1) return;
+    setSelectedIndex(index);
+    setPreview(previewSrc ? { id: photo.id, src: previewSrc } : null);
   };
 
   const introPhotos = photos.slice(3, 11);
@@ -50,7 +53,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
       <section id="utvalda-bilder" className="scroll-mt-24 pb-12 md:scroll-mt-28 md:pb-16">
         <ImageContainer
           photos={introPhotos}
-          variant="weddings"
+          variant="editorial"
           onItemClick={openPhoto}
           isLoading={isLoading}
           skeletonCount={8}
@@ -75,7 +78,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
         <section id="galleri" className="scroll-mt-24 pb-12 pt-2 md:scroll-mt-28 md:pb-16 md:pt-6">
           <ImageContainer
             photos={galleryPhotos}
-            variant="weddings"
+            variant="editorial"
             onItemClick={openPhoto}
             isLoading={isLoading}
           />
@@ -90,6 +93,7 @@ export function WeddingsLayout({ photos, isLoading }: { photos: Photo[]; isLoadi
         photos={photos}
         currentIndex={selectedIndex ?? 0}
         setCurrentIndex={setSelectedIndex}
+        preview={preview}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { cloudinarySrcSet } from '@/utils/cloudinary';
 import { useImageLoaded } from '@/utils/use-image-loaded';
 
 interface ImageCardProps {
@@ -6,13 +8,46 @@ interface ImageCardProps {
   className?: string;
   imgClassName?: string;
   style?: React.CSSProperties;
-  onClick?: () => void;
+  onClick?: (previewSrc?: string) => void;
   onLoad?: () => void;
   has_variant?: React.ReactNode;
+  /** Responsive `sizes` hint. Only used when the URL is served by Cloudinary. */
+  sizes?: string;
+  /** Widths for the responsive `srcset`. Defaults to the shared Cloudinary scale. */
+  widths?: number[];
+  /** Load immediately instead of lazily. Use for above-the-fold images. */
+  priority?: boolean;
+  /** Stagger the fade-in by this many milliseconds. */
+  revealDelay?: number;
 }
 
 const DEFAULT_IMG_CLASS =
   'relative h-full w-full object-cover object-[center_70%] transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.04]';
+
+const REVEAL_DURATION = 700;
+const MOBILE_MEDIA_QUERY = '(max-width: 767px)';
+
+/**
+ * Desktop photos are judged on sharpness, so the grid loads the high-resolution
+ * source there. Mobile keeps the responsive `srcset` to save data.
+ */
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia(MOBILE_MEDIA_QUERY).matches
+      : false,
+  );
+
+  useEffect(() => {
+    const query = window.matchMedia(MOBILE_MEDIA_QUERY);
+    const update = () => setIsMobile(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return isMobile;
+}
 
 export function ImageCard({
   url,
@@ -23,18 +58,50 @@ export function ImageCard({
   onClick,
   onLoad: onLoadProp,
   has_variant,
+  sizes = '100vw',
+  widths,
+  priority = false,
+  revealDelay = 0,
 }: ImageCardProps) {
   const image = useImageLoaded(url);
+  const isMobile = useIsMobile();
+  const srcSet = isMobile ? cloudinarySrcSet(url, widths) : undefined;
+
+  /**
+   * The stagger delay belongs to the reveal only. Keeping it on the element
+   * would also delay the hover zoom on every hover, which feels sluggish, so we
+   * drop it once the fade has finished.
+   */
+  const [revealComplete, setRevealComplete] = useState(false);
+
+  useEffect(() => {
+    if (!image.loaded) {
+      setRevealComplete(false);
+      return;
+    }
+    if (!revealDelay) {
+      setRevealComplete(true);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setRevealComplete(true),
+      revealDelay + REVEAL_DURATION,
+    );
+    return () => window.clearTimeout(timer);
+  }, [image.loaded, revealDelay]);
 
   const handleLoad = () => {
     image.onLoad();
     onLoadProp?.();
   };
 
+  const revealDelayStyle = revealDelay ? `${revealDelay}ms` : undefined;
+  const transitionDelay = revealComplete ? undefined : revealDelayStyle;
+
   return (
     <div
       className={`group relative overflow-hidden ${className}`}
-      onClick={onClick}
+      onClick={() => onClick?.(image.ref.current?.currentSrc || url)}
       style={style}
     >
       {has_variant && (
@@ -59,18 +126,27 @@ export function ImageCard({
         className={`pointer-events-none absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${
           image.loaded ? 'opacity-0' : 'animate-pulse'
         }`}
+        style={{ transitionDelay: revealDelayStyle }}
         aria-hidden="true"
       />
 
       <img
         ref={image.ref}
         src={url}
+        srcSet={srcSet}
+        sizes={srcSet ? sizes : undefined}
         alt={alt || "Fotografi Myelie Lendelund"}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
         decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
         onLoad={handleLoad}
         onError={image.onError}
-        className={`${imgClassName ?? DEFAULT_IMG_CLASS} ${image.loaded ? 'opacity-100' : 'opacity-0'}`}
+        style={{ transitionDelay }}
+        className={`${imgClassName ?? DEFAULT_IMG_CLASS} ${
+          image.loaded
+            ? 'scale-100 opacity-100'
+            : 'scale-[1.02] opacity-0'
+        }`}
       />
       <div className="absolute inset-0 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
     </div>

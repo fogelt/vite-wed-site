@@ -67,9 +67,8 @@ export function Hero({ photos, isLoading }: HeroProps) {
           It fades in only once the centre photo (or its blur) is visible, so it
           never darkens the loading skeleton. */}
       <div
-        className={`pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(58%_52%_at_50%_50%,rgba(0,0,0,0.26),transparent_76%)] transition-opacity duration-700 ${
-          centerVisible ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(58%_52%_at_50%_50%,rgba(0,0,0,0.26),transparent_76%)] transition-opacity duration-700 ${centerVisible ? 'opacity-100' : 'opacity-0'
+          }`}
         aria-hidden="true"
       />
 
@@ -90,7 +89,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
         </p>
 
         <button
-          onClick={() => scrollToSection('galleri')}
+          onClick={() => scrollToSection('utvalda-bilder')}
           className="w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
         >
           Se galleriet
@@ -141,9 +140,8 @@ function HeroStrip({
     <div className={`relative overflow-hidden bg-white ${className}`}>
       {/* Very dim skeleton in the card's shape, replaced by the blur and then the photo. */}
       <div
-        className={`absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${
-          visible ? 'opacity-0' : 'animate-pulse'
-        }`}
+        className={`absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${visible ? 'opacity-0' : 'animate-pulse'
+          }`}
         aria-hidden="true"
       />
 
@@ -157,9 +155,8 @@ function HeroStrip({
         decoding="async"
         onLoad={preview.onLoad}
         onError={preview.onError}
-        className={`pointer-events-none absolute inset-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${
-          preview.loaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`pointer-events-none absolute inset-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
+          }`}
       />
 
       <img
@@ -172,17 +169,15 @@ function HeroStrip({
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={image.onLoad}
         onError={image.onError}
-        className={`relative h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${
-          image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
-        }`}
+        className={`relative h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
+          }`}
       />
       {/* Only the centre strip is darkened; the side photos stay untouched.
           Fade it in with the image so it never darkens the skeleton. */}
       {darkened && (
         <div
-          className={`pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30 transition-opacity duration-700 ${
-            visible ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'
+            }`}
           aria-hidden="true"
         />
       )}

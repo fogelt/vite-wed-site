@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { cloudinaryImage, scrollToSection, useImageLoaded } from '@/utils';
+import {
+  cloudinaryImage,
+  preloadImage,
+  scrollToSection,
+  useImageLoaded,
+} from '@/utils';
 
 interface HeroPhoto {
   id: string;
@@ -53,6 +58,20 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const mobileIndex = mobilePhotos.length > 0
     ? startIndex % mobilePhotos.length
     : 0;
+
+  const nextMobilePhoto = mobilePhotos.length > 1
+    ? mobilePhotos[(mobileIndex + 1) % mobilePhotos.length]
+    : undefined;
+
+  // Warm the next full-size hero frame so the cross-fade never exposes a
+  // loading state when the rotation advances.
+  useEffect(() => {
+    if (!isMobile || !nextMobilePhoto?.url) return;
+
+    preloadImage(
+      cloudinaryImage(nextMobilePhoto.url, { width: CENTER_IMAGE_WIDTH }),
+    );
+  }, [isMobile, nextMobilePhoto?.url]);
 
   const left = isMobile ? undefined : desktopLeft;
   const center = isMobile ? mobilePhotos[mobileIndex] : desktopCenter;

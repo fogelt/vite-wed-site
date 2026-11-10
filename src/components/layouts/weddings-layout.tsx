@@ -16,6 +16,8 @@ interface Photo {
   url: string;
   alt?: string;
   description?: string;
+  width?: number;
+  height?: number;
   photo_variants?: { id: string; url: string }[];
 }
 

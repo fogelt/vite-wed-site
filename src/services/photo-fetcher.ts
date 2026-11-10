@@ -17,6 +17,8 @@ function photoAlt(tag: string) {
 interface CloudinaryResource {
   public_id: string;
   format: string;
+  width?: number;
+  height?: number;
   [key: string]: any;
 }
 
@@ -68,6 +70,9 @@ export async function fetchPhotosByTag(tag: string | null) {
 
     const validDbOrder = (dbOrder || []).filter((item) => !blacklistedIds.has(item.id));
     const sortedIds = new Set(validDbOrder.map((item) => item.id));
+    const cloudMetaById = new Map(
+      cloudResources.map((resource) => [resource.public_id, resource])
+    );
 
     const finalItems = [
       ...validDbOrder.map((item) => {
@@ -80,11 +85,15 @@ export async function fetchPhotosByTag(tag: string | null) {
           descriptionText = (rawDescription as any).description || "";
         }
 
+        const cloudMeta = cloudMetaById.get(item.id);
+
         return {
           id: item.id,
           url: cloudinaryImage(item.url),
           alt: photoAlt(tag),
           description: descriptionText,
+          width: cloudMeta?.width,
+          height: cloudMeta?.height,
           photo_variants: item.photo_variants?.sort((a: any, b: any) => a.position - b.position) || []
         };
       }),
@@ -97,6 +106,8 @@ export async function fetchPhotosByTag(tag: string | null) {
           ),
           alt: photoAlt(tag),
           description: "",
+          width: r.width,
+          height: r.height,
           photo_variants: []
         }))
     ];

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cloudinaryImage, scrollToSection, useImageLoaded } from '@/utils';
 
@@ -6,6 +6,8 @@ interface HeroPhoto {
   id: string;
   url: string;
   alt?: string;
+  width?: number;
+  height?: number;
 }
 
 interface HeroProps {
@@ -18,16 +20,48 @@ const CENTER_IMAGE_WIDTH = 1600;
 const SIDE_IMAGE_WIDTH = 900;
 
 export function Hero({ photos, isLoading }: HeroProps) {
-  // Like the original triptych: narrow left, wide center, narrow right.
-  const left = photos.length >= 2 ? photos[0] : undefined;
-  const center = photos.length >= 2 ? photos[1] : photos[0];
-  const right = photos.length >= 3 ? photos[2] : undefined;
+  const [startIndex, setStartIndex] = useState(0);
+  const isMobile = useIsMobile();
+
+  // On phones the single hero image gets cropped to a tall strip. Prefer
+  // portrait photos there so faces and framing survive the crop.
+  const portraitPhotos = photos.filter((photo) =>
+    !photo.width || !photo.height || photo.height > photo.width
+  );
+  const mobilePhotos = portraitPhotos.length > 0 ? portraitPhotos : photos;
+
+  useEffect(() => {
+    if (!isMobile || isLoading || mobilePhotos.length < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setStartIndex((index) => (index + 1) % mobilePhotos.length);
+      }
+    }, 6500);
+
+    return () => window.clearInterval(interval);
+  }, [isMobile, isLoading, mobilePhotos.length]);
+
+  // Desktop keeps the original still triptych: narrow left, wide centre,
+  // narrow right. Only the phone version cycles.
+  const desktopLeft = photos.length >= 2 ? photos[0] : undefined;
+  const desktopCenter = photos.length >= 2 ? photos[1] : photos[0];
+  const desktopRight = photos.length >= 3 ? photos[2] : undefined;
+
+  const mobileIndex = mobilePhotos.length > 0
+    ? startIndex % mobilePhotos.length
+    : 0;
+
+  const left = isMobile ? undefined : desktopLeft;
+  const center = isMobile ? mobilePhotos[mobileIndex] : desktopCenter;
+  const right = isMobile ? undefined : desktopRight;
   const hasPhotos = !isLoading && Boolean(center?.url);
   const [centerVisible, setCenterVisible] = useState(false);
   const handleCenterVisible = useCallback(() => setCenterVisible(true), []);
 
   return (
-    <section className="relative flex h-[78vh] max-h-[820px] min-h-[520px] w-full items-center justify-center overflow-hidden bg-white">
+    <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[78vh] md:max-h-[820px] md:min-h-[520px]">
       {/* Dim skeletons match the final triptych, so nothing shifts when photos arrive. */}
       {!hasPhotos && (
         <div className="absolute inset-0 flex gap-2" aria-hidden="true">
@@ -44,6 +78,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
             <HeroStrip
               photo={left}
               width={SIDE_IMAGE_WIDTH}
+              zoom={isMobile}
               className="hidden h-full w-[22%] md:block"
             />
             <HeroStrip
@@ -51,12 +86,14 @@ export function Hero({ photos, isLoading }: HeroProps) {
               width={CENTER_IMAGE_WIDTH}
               darkened
               priority
+              zoom={isMobile}
               onVisible={handleCenterVisible}
               className="h-full min-w-0 flex-1"
             />
             <HeroStrip
               photo={right}
               width={SIDE_IMAGE_WIDTH}
+              zoom={isMobile}
               className="hidden h-full w-[22%] md:block"
             />
           </div>
@@ -107,11 +144,31 @@ export function Hero({ photos, isLoading }: HeroProps) {
   );
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 767px)').matches
+      : false,
+  );
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(query.matches);
+
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  return isMobile;
+}
+
 function HeroStrip({
   photo,
   width,
   darkened = false,
   priority = false,
+  zoom = false,
   onVisible,
   className = '',
 }: {
@@ -120,6 +177,8 @@ function HeroStrip({
   darkened?: boolean;
   /** Load immediately. Side strips stay lazy so they are not fetched on mobile. */
   priority?: boolean;
+  /** Slow Ken Burns zoom. Only enabled for the mobile hero. */
+  zoom?: boolean;
   /** Called once the blurred preview or the full photo is visible. */
   onVisible?: () => void;
   className?: string;
@@ -128,7 +187,24 @@ function HeroStrip({
   const placeholder = photo?.url ? cloudinaryImage(photo.url, { blur: true }) : '';
   const preview = useImageLoaded(placeholder);
   const image = useImageLoaded(src);
-  const visible = preview.loaded || image.loaded;
+  const previousSrcRef = useRef(src);
+  const [previousSrc, setPreviousSrc] = useState<string | null>(null);
+  const visible = preview.loaded || image.loaded || Boolean(previousSrc);
+
+  useEffect(() => {
+    if (previousSrcRef.current === src) return;
+
+    setPreviousSrc(previousSrcRef.current);
+    previousSrcRef.current = src;
+  }, [src]);
+
+  useEffect(() => {
+    if (!previousSrc || !image.loaded) return;
+
+    // Keep the old frame underneath until the new one has fully faded in.
+    const timer = window.setTimeout(() => setPreviousSrc(null), 1100);
+    return () => window.clearTimeout(timer);
+  }, [previousSrc, image.loaded]);
 
   useEffect(() => {
     if (visible) onVisible?.();
@@ -145,33 +221,61 @@ function HeroStrip({
         aria-hidden="true"
       />
 
-      {/* The 1 KB blurred Cloudinary preview appears first and blends into the photo. */}
-      <img
-        ref={preview.ref}
-        src={placeholder}
-        alt=""
-        aria-hidden="true"
-        loading="eager"
-        decoding="async"
-        onLoad={preview.onLoad}
-        onError={preview.onError}
-        className={`pointer-events-none absolute inset-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
+      <div
+        className={`absolute inset-0 origin-[center_35%] ${
+          zoom
+            ? 'motion-safe:animate-[hero-zoom_3s_ease-out_forwards]'
+            : ''
+        }`}
+      >
+        <div
+          className={`absolute inset-0 ${
+            zoom
+              ? 'motion-safe:animate-[hero-pan_20s_ease-in-out_3s_infinite]'
+              : ''
           }`}
-      />
+        >
+          {/* The previous frame stays put while the new photo fades in on top. */}
+          {previousSrc && (
+            <img
+              src={previousSrc}
+              alt=""
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_35%] transition-opacity duration-1000 ease-out ${
+                image.loaded ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+          )}
 
-      <img
-        key={src}
-        ref={image.ref}
-        src={src}
-        alt={photo.alt || 'Bröllopsfotograf Myelie Lendelund'}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
-        fetchPriority={priority ? 'high' : 'auto'}
-        onLoad={image.onLoad}
-        onError={image.onError}
-        className={`relative h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
-          }`}
-      />
+          {/* The 1 KB blurred Cloudinary preview appears first and blends into the photo. */}
+          <img
+            ref={preview.ref}
+            src={placeholder}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+            onLoad={preview.onLoad}
+            onError={preview.onError}
+            className={`pointer-events-none absolute inset-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
+              }`}
+          />
+
+          <img
+            key={src}
+            ref={image.ref}
+            src={src}
+            alt={photo.alt || 'Bröllopsfotograf Myelie Lendelund'}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={priority ? 'high' : 'auto'}
+            onLoad={image.onLoad}
+            onError={image.onError}
+            className={`absolute inset-0 h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
+              }`}
+          />
+        </div>
+      </div>
       {/* Only the centre strip is darkened; the side photos stay untouched.
           Fade it in with the image so it never darkens the skeleton. */}
       {darkened && (

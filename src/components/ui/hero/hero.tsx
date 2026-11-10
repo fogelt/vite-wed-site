@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   cloudinaryImage,
@@ -62,16 +62,20 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const nextMobilePhoto = mobilePhotos.length > 1
     ? mobilePhotos[(mobileIndex + 1) % mobilePhotos.length]
     : undefined;
+  const secondNextMobilePhoto = mobilePhotos.length > 2
+    ? mobilePhotos[(mobileIndex + 2) % mobilePhotos.length]
+    : undefined;
 
-  // Warm the next full-size hero frame so the cross-fade never exposes a
+  // Warm the upcoming full-size hero frames so a cross-fade never exposes a
   // loading state when the rotation advances.
   useEffect(() => {
-    if (!isMobile || !nextMobilePhoto?.url) return;
+    if (!isMobile) return;
 
-    preloadImage(
-      cloudinaryImage(nextMobilePhoto.url, { width: CENTER_IMAGE_WIDTH }),
-    );
-  }, [isMobile, nextMobilePhoto?.url]);
+    for (const photo of [nextMobilePhoto, secondNextMobilePhoto]) {
+      if (!photo?.url) continue;
+      preloadImage(cloudinaryImage(photo.url, { width: CENTER_IMAGE_WIDTH }));
+    }
+  }, [isMobile, nextMobilePhoto?.url, secondNextMobilePhoto?.url]);
 
   const left = isMobile ? undefined : desktopLeft;
   const center = isMobile ? mobilePhotos[mobileIndex] : desktopCenter;
@@ -206,22 +210,41 @@ function HeroStrip({
   const image = useImageLoaded(src);
   const previousSrcRef = useRef(src);
   const [previousSrc, setPreviousSrc] = useState<string | null>(null);
+  const [fadePrevious, setFadePrevious] = useState(false);
   const visible = preview.loaded || image.loaded || Boolean(previousSrc);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (previousSrcRef.current === src) return;
 
     setPreviousSrc(previousSrcRef.current);
+    setFadePrevious(false);
     previousSrcRef.current = src;
   }, [src]);
 
   useEffect(() => {
-    if (!previousSrc || !image.loaded) return;
+    if (!previousSrc) return;
 
-    // Keep the old frame underneath until the new one has fully faded in.
-    const timer = window.setTimeout(() => setPreviousSrc(null), 1100);
-    return () => window.clearTimeout(timer);
+    if (image.loaded) {
+      // Wait one painted frame so the old frame is definitely visible before
+      // the fade starts, even when the new image comes straight from cache.
+      const frame = window.requestAnimationFrame(() => setFadePrevious(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    // Safety net if decoding is unusually slow: still reveal the new frame.
+    const fallback = window.setTimeout(() => setFadePrevious(true), 1200);
+    return () => window.clearTimeout(fallback);
   }, [previousSrc, image.loaded]);
+
+  useEffect(() => {
+    if (!previousSrc || !fadePrevious) return;
+
+    const timer = window.setTimeout(() => {
+      setPreviousSrc(null);
+      setFadePrevious(false);
+    }, 1900);
+    return () => window.clearTimeout(timer);
+  }, [previousSrc, fadePrevious]);
 
   useEffect(() => {
     if (visible) onVisible?.();
@@ -232,11 +255,13 @@ function HeroStrip({
   return (
     <div className={`relative overflow-hidden bg-white ${className}`}>
       {/* Very dim skeleton in the card's shape, replaced by the blur and then the photo. */}
-      <div
-        className={`absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${visible ? 'opacity-0' : 'animate-pulse'
-          }`}
-        aria-hidden="true"
-      />
+      {!previousSrc && (
+        <div
+          className={`absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${visible ? 'opacity-0' : 'animate-pulse'
+            }`}
+          aria-hidden="true"
+        />
+      )}
 
       <div
         className={`absolute inset-0 origin-[center_35%] ${
@@ -252,32 +277,23 @@ function HeroStrip({
               : ''
           }`}
         >
-          {/* The previous frame stays put while the new photo fades in on top. */}
-          {previousSrc && (
+          {/* The 1 KB blurred Cloudinary preview appears first and blends into the photo. */}
+          {!previousSrc && (
             <img
-              src={previousSrc}
+              ref={preview.ref}
+              src={placeholder}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_35%] transition-opacity duration-1000 ease-out ${
-                image.loaded ? 'opacity-0' : 'opacity-100'
-              }`}
+              loading="eager"
+              decoding="async"
+              onLoad={preview.onLoad}
+              onError={preview.onError}
+              className={`pointer-events-none absolute inset-0 z-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
+                }`}
             />
           )}
 
-          {/* The 1 KB blurred Cloudinary preview appears first and blends into the photo. */}
-          <img
-            ref={preview.ref}
-            src={placeholder}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            decoding="async"
-            onLoad={preview.onLoad}
-            onError={preview.onError}
-            className={`pointer-events-none absolute inset-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
-              }`}
-          />
-
+          {/* The incoming frame sits underneath, fully opaque, ready to be revealed. */}
           <img
             key={src}
             ref={image.ref}
@@ -288,9 +304,26 @@ function HeroStrip({
             fetchPriority={priority ? 'high' : 'auto'}
             onLoad={image.onLoad}
             onError={image.onError}
-            className={`absolute inset-0 h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${image.loaded ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
-              }`}
+            className={`absolute inset-0 z-10 h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${
+              previousSrc
+                ? 'scale-100 opacity-100'
+                : image.loaded
+                  ? 'scale-100 opacity-100'
+                  : 'scale-[1.04] opacity-0'
+            }`}
           />
+
+          {/* The old frame sits on top and fades out once the new one is ready. */}
+          {previousSrc && (
+            <img
+              src={previousSrc}
+              alt=""
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 z-20 h-full w-full object-cover object-[center_35%] transition-opacity [transition-duration:1800ms] ease-in-out [will-change:opacity] ${
+                fadePrevious ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+          )}
         </div>
       </div>
     </div>

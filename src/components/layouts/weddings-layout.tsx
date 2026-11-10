@@ -18,6 +18,7 @@ interface Photo {
   description?: string;
   width?: number;
   height?: number;
+  mobileHero?: boolean;
   photo_variants?: { id: string; url: string }[];
 }
 

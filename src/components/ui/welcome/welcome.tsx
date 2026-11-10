@@ -18,6 +18,7 @@ function normalizeProcessSteps(value: unknown): HowItWorksStep[] {
     .map((step) => ({
       title: typeof step.title === 'string' ? step.title : '',
       text: typeof step.text === 'string' ? step.text : '',
+      icon: typeof step.icon === 'string' ? step.icon : undefined,
     }))
     .filter((step) => step.title.trim() !== '' || step.text.trim() !== '');
 }
@@ -52,7 +53,6 @@ export function WelcomeSection() {
               {content?.title || FALLBACK_TITLE}
             </h2>
 
-            <div className="mt-8 h-px w-16 bg-stone-300" aria-hidden="true" />
           </div>
         </Reveal>
 

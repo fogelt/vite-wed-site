@@ -94,6 +94,7 @@ export async function fetchPhotosByTag(tag: string | null) {
           description: descriptionText,
           width: cloudMeta?.width,
           height: cloudMeta?.height,
+          mobileHero: Boolean(item.mobile_hero),
           photo_variants: item.photo_variants?.sort((a: any, b: any) => a.position - b.position) || []
         };
       }),
@@ -108,6 +109,7 @@ export async function fetchPhotosByTag(tag: string | null) {
           description: "",
           width: r.width,
           height: r.height,
+          mobileHero: false,
           photo_variants: []
         }))
     ];

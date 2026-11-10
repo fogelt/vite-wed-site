@@ -91,3 +91,41 @@
     transform: translateX(-3.5%) scale(1.015);
   }
 }
+
+.process-step .process-icon,
+.process-step .process-number,
+.process-step .process-title,
+.process-step .process-text {
+  transition: color 120ms ease, background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.process-step .process-card {
+  opacity: 0.3;
+  transform: translateY(6px);
+  transition: opacity 350ms ease, transform 350ms ease;
+}
+
+.process-step[data-reached="true"] .process-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.process-step[data-reached="true"] .process-icon {
+  border-color: #1c1917;
+  background-color: #1c1917;
+  color: #ffffff;
+}
+
+.process-step[data-reached="true"] .process-check {
+  opacity: 1;
+}
+
+.process-step[data-reached="true"] .process-number,
+.process-step[data-reached="true"] .process-title {
+  color: #1c1917;
+}
+
+.process-step[data-reached="true"] .process-text {
+  color: #57534e;
+}

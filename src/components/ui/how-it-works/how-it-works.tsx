@@ -1,5 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import {
+  ArrowRight,
+  CalendarCheck,
+  Camera,
+  Check,
+  Circle,
+  Clock,
+  FileText,
+  Flower2,
+  Gem,
+  HeartHandshake,
+  Images,
+  Mail,
+  MapPin,
+  MessagesSquare,
+  Phone,
+  Sparkles,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import { scrollToSection } from '@/utils';
 import { Reveal } from '../reveal';
 
@@ -8,26 +27,64 @@ const DEFAULT_EYEBROW = 'Så funkar det';
 export interface HowItWorksStep {
   title: string;
   text: string;
+  icon?: string;
 }
 
 const DEFAULT_STEPS: HowItWorksStep[] = [
   {
     title: 'Hör av er',
-    text: 'Berätta om datum, plats och vad ni drömmer om. Vi börjar med ett samtal där ni får ställa alla frågor.',
+    text: 'Datum, plats och önskemål.',
+    icon: 'messages',
   },
   {
-    title: 'Vi planerar tillsammans',
-    text: 'Vi går igenom tider, platser och vilka ögonblick som är viktigast för er. Inga detaljer är för små.',
+    title: 'Överenskommelse',
+    text: 'Avtal och datum bokas.',
+    icon: 'file',
   },
   {
     title: 'Bröllopsdagen',
-    text: 'Jag fotograferar närvarande och lugnt, med plats för både det stora och det lilla som händer runtomkring.',
+    text: 'Jag fotograferar er dag.',
+    icon: 'camera',
   },
   {
     title: 'Bilderna',
-    text: 'Ett genomtänkt urval av redigerade bilder levereras digitalt, redo att sparas och återvända till i många år.',
+    text: 'Redigerade bilder levereras digitalt.',
+    icon: 'images',
   },
 ];
+
+const PROCESS_ICONS: Record<string, LucideIcon> = {
+  messages: MessagesSquare,
+  calendar: CalendarCheck,
+  camera: Camera,
+  images: Images,
+  heart: HeartHandshake,
+  gem: Gem,
+  users: Users,
+  file: FileText,
+  mail: Mail,
+  phone: Phone,
+  'map-pin': MapPin,
+  clock: Clock,
+  sparkles: Sparkles,
+  flower: Flower2,
+};
+
+const FALLBACK_ICONS: LucideIcon[] = [
+  MessagesSquare,
+  CalendarCheck,
+  Camera,
+  Images,
+  HeartHandshake,
+  Sparkles,
+  Check,
+  Circle,
+];
+
+function getStepIcon(icon: string | undefined, index: number) {
+  return (icon ? PROCESS_ICONS[icon] : undefined) ??
+    FALLBACK_ICONS[index % FALLBACK_ICONS.length];
+}
 
 export function HowItWorksPanel({
   eyebrow = DEFAULT_EYEBROW,
@@ -41,42 +98,64 @@ export function HowItWorksPanel({
   const visibleSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
   const stepCount = visibleSteps.length;
   const panelRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
-  const [reachedCount, setReachedCount] = useState(1);
+  const markerRefs = useRef<Array<HTMLSpanElement | null>>([]);
 
   useEffect(() => {
     const panel = panelRef.current;
+    const track = trackRef.current;
     const fill = fillRef.current;
-    if (!panel || !fill) return;
+    if (!panel || !track || !fill) return;
 
     let frame = 0;
 
     const measure = () => {
       frame = 0;
 
-      const rect = panel.getBoundingClientRect();
       const viewport = window.innerHeight;
-      const start = viewport * 0.85;
-      // Finish while the bottom of the panel is still comfortably on screen.
-      const end = viewport * 0.55;
-      const distance = rect.height + (start - end);
-      const progress = distance > 0
-        ? Math.min(1, Math.max(0, (start - rect.top) / distance))
-        : 0;
+      const container = track.parentElement;
+      const firstMarker = markerRefs.current[0];
+      const lastMarker = markerRefs.current[stepCount - 1];
+      if (!container || !firstMarker || !lastMarker) return;
 
-      // Update the line directly so it never trails the scroll position.
-      fill.style.transform = `scaleY(${progress})`;
+      const containerRect = container.getBoundingClientRect();
+      const firstRect = firstMarker.getBoundingClientRect();
+      const lastRect = lastMarker.getBoundingClientRect();
+      const firstCentre = firstRect.top + firstRect.height / 2 - containerRect.top;
+      const lastCentre = lastRect.top + lastRect.height / 2 - containerRect.top;
+      const trackHeight = Math.max(1, lastCentre - firstCentre);
 
-      let nextCount = 1;
-      for (let index = 1; index < stepCount; index++) {
-        if (progress >= index / (stepCount - 1) - 0.05) {
-          nextCount = index + 1;
+      // Run the line from the first icon centre to the last so it never pokes
+      // out above or below the nodes.
+      track.style.top = `${firstCentre}px`;
+      track.style.height = `${trackHeight}px`;
+
+      // Let the progress edge follow the viewport. A node lights once it
+      // passes 60% of the screen, so its card finishes fading in before it is
+      // centred and fades out again on the way back up.
+      const anchor = viewport * 0.6 - containerRect.top;
+      const fillProgress = Math.min(
+        1,
+        Math.max(0, (anchor - firstCentre) / trackHeight)
+      );
+
+      fill.style.transform = `scaleY(${fillProgress})`;
+
+      for (let index = 0; index < stepCount; index++) {
+        const marker = markerRefs.current[index];
+        if (!marker) continue;
+
+        const markerRect = marker.getBoundingClientRect();
+        const markerCentre =
+          markerRect.top + markerRect.height / 2 - containerRect.top;
+        const reached = markerCentre <= anchor + 0.5;
+        const step = marker.closest<HTMLElement>('[data-process-step]');
+
+        if (step) {
+          step.dataset.reached = reached ? 'true' : 'false';
         }
       }
-
-      setReachedCount((previous) =>
-        previous === nextCount ? previous : nextCount
-      );
     };
 
     const requestMeasure = () => {
@@ -114,7 +193,8 @@ export function HowItWorksPanel({
 
       <div className="relative mt-8">
         <div
-          className="absolute bottom-1 left-[6px] top-1 w-px bg-stone-200"
+          ref={trackRef}
+          className="absolute left-[15px] w-px bg-stone-200"
           aria-hidden="true"
         >
           <div
@@ -124,56 +204,43 @@ export function HowItWorksPanel({
           />
         </div>
 
-        <ol className="space-y-8">
+        <ol className="space-y-5">
           {visibleSteps.map((step, index) => {
-            const isReached = index < reachedCount;
-            const isActive = isReached;
+            const Icon = getStepIcon(step.icon, index);
 
             return (
-              <li key={`${index}-${step.title}`} className="relative pl-8">
+              <li
+                key={`${index}-${step.title}`}
+                data-process-step="true"
+                data-reached="false"
+                className="process-step relative pl-14"
+              >
                 <span
-                  className="absolute left-0 top-1.5 flex h-3 w-3 items-center justify-center"
+                  ref={(element) => {
+                    markerRefs.current[index] = element;
+                  }}
+                  className="process-icon absolute left-0 top-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-400"
                   aria-hidden="true"
                 >
-                  <span
-                    className={`absolute inset-0 rotate-45 border transition-colors duration-200 ${
-                      isReached
-                        ? 'border-stone-900 bg-stone-900'
-                        : 'border-stone-300 bg-white'
-                    }`}
-                  />
-                  {isReached && (
-                    <Check
-                      size={7}
-                      strokeWidth={3}
-                      className="relative text-white"
-                    />
-                  )}
+                  <Icon size={15} strokeWidth={1.5} />
+                  <span className="process-check absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-900 opacity-0">
+                    <Check size={8} strokeWidth={3} />
+                  </span>
                 </span>
 
-                <span
-                  className={`text-[9px] uppercase tracking-[0.3em] transition-colors duration-200 ${
-                    isActive ? 'text-stone-900' : 'text-stone-400'
-                  }`}
-                >
-                  {String(index + 1).padStart(2, '0')}
-                </span>
+                <div className="process-card rounded-sm bg-stone-200/40 p-4">
+                  <span className="process-number text-[9px] uppercase tracking-[0.3em] text-stone-400">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
 
-                <h3
-                  className={`mt-1 text-base font-light leading-snug transition-colors duration-200 ${
-                    isActive ? 'text-stone-900' : 'text-stone-400'
-                  }`}
-                >
-                  {step.title}
-                </h3>
+                  <h3 className="process-title mt-1 text-base font-light leading-snug text-stone-400">
+                    {step.title}
+                  </h3>
 
-                <p
-                  className={`mt-2 text-sm font-light leading-relaxed transition-colors duration-200 ${
-                    isActive ? 'text-stone-600' : 'text-stone-400'
-                  }`}
-                >
-                  {step.text}
-                </p>
+                  <p className="process-text mt-2 text-sm font-light leading-relaxed text-stone-400">
+                    {step.text}
+                  </p>
+                </div>
               </li>
             );
           })}

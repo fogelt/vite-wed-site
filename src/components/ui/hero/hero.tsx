@@ -8,6 +8,7 @@ interface HeroPhoto {
   alt?: string;
   width?: number;
   height?: number;
+  mobileHero?: boolean;
 }
 
 interface HeroProps {
@@ -23,12 +24,12 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const [startIndex, setStartIndex] = useState(0);
   const isMobile = useIsMobile();
 
-  // On phones the single hero image gets cropped to a tall strip. Prefer
-  // portrait photos there so faces and framing survive the crop.
-  const portraitPhotos = photos.filter((photo) =>
-    !photo.width || !photo.height || photo.height > photo.width
-  );
-  const mobilePhotos = portraitPhotos.length > 0 ? portraitPhotos : photos;
+  // The photographer chooses the mobile hero rotation in the admin. If none
+  // are marked yet, show the first photo without cycling.
+  const selectedHeroPhotos = photos.filter((photo) => photo.mobileHero);
+  const mobilePhotos = selectedHeroPhotos.length > 0
+    ? selectedHeroPhotos
+    : photos.slice(0, 1);
 
   useEffect(() => {
     if (!isMobile || isLoading || mobilePhotos.length < 2) return;
@@ -84,7 +85,6 @@ export function Hero({ photos, isLoading }: HeroProps) {
             <HeroStrip
               photo={center}
               width={CENTER_IMAGE_WIDTH}
-              darkened
               priority
               zoom={isMobile}
               onVisible={handleCenterVisible}
@@ -166,7 +166,6 @@ function useIsMobile() {
 function HeroStrip({
   photo,
   width,
-  darkened = false,
   priority = false,
   zoom = false,
   onVisible,
@@ -174,7 +173,6 @@ function HeroStrip({
 }: {
   photo?: HeroPhoto;
   width: number;
-  darkened?: boolean;
   /** Load immediately. Side strips stay lazy so they are not fetched on mobile. */
   priority?: boolean;
   /** Slow Ken Burns zoom. Only enabled for the mobile hero. */
@@ -276,15 +274,6 @@ function HeroStrip({
           />
         </div>
       </div>
-      {/* Only the centre strip is darkened; the side photos stay untouched.
-          Fade it in with the image so it never darkens the skeleton. */}
-      {darkened && (
-        <div
-          className={`pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-black/30 transition-opacity duration-700 ${visible ? 'opacity-100' : 'opacity-0'
-            }`}
-          aria-hidden="true"
-        />
-      )}
     </div>
   );
 }

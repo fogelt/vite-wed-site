@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   cloudinaryImage,
@@ -81,12 +81,10 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const center = isMobile ? mobilePhotos[mobileIndex] : desktopCenter;
   const right = isMobile ? undefined : desktopRight;
   const hasPhotos = !isLoading && Boolean(center?.url);
-  const [centerVisible, setCenterVisible] = useState(false);
-  const handleCenterVisible = useCallback(() => setCenterVisible(true), []);
 
   return (
     <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[78vh] md:max-h-[820px] md:min-h-[520px]">
-      {/* Dim skeletons match the final triptych, so nothing shifts when photos arrive. */}
+      {/* Skeletons mirror the triptych so the layout never jumps on load. */}
       {!hasPhotos && (
         <div className="absolute inset-0 flex gap-2" aria-hidden="true">
           <div className="hidden h-full w-[22%] animate-pulse bg-neutral-100 md:block" />
@@ -110,7 +108,6 @@ export function Hero({ photos, isLoading }: HeroProps) {
               width={CENTER_IMAGE_WIDTH}
               priority
               zoom={isMobile}
-              onVisible={handleCenterVisible}
               className="h-full min-w-0 flex-1"
             />
             <HeroStrip
@@ -123,27 +120,18 @@ export function Hero({ photos, isLoading }: HeroProps) {
         </div>
       )}
 
-      {/* Soft scrim so the white type stays legible over the photo.
-          It fades in only once the centre photo (or its blur) is visible, so it
-          never darkens the loading skeleton. */}
-      <div
-        className={`pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/45 via-transparent to-black/35 transition-opacity duration-700 ${centerVisible ? 'opacity-100' : 'opacity-0'
-          }`}
-        aria-hidden="true"
-      />
-
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-8 pb-12 text-center md:pt-12 md:pb-16">
         <div className="flex flex-col items-center">
-          <span className="mb-5 text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)] md:mb-7">
-            Bröllopsfotograf · Skåne
-          </span>
-
-          <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
+          <h1 className="mb-4 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-5 md:text-5xl">
             <span className="sr-only">Bröllopsfotograf i Skåne — </span>
             Myelie Lendelund
           </h1>
 
-          <span className="mt-5 h-px w-16 bg-white/40 md:mt-7" aria-hidden="true" />
+          <span className="mb-4 h-px w-16 bg-white/40 md:mb-5" aria-hidden="true" />
+
+          <span className="text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)]">
+            Bröllopsfotograf · Skåne
+          </span>
         </div>
 
         <div className="flex flex-col items-center gap-5 md:gap-6">

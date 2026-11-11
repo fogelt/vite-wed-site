@@ -92,6 +92,30 @@
   }
 }
 
+@keyframes swipe-hint {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateX(5px);
+    opacity: 1;
+  }
+}
+
+@keyframes swipe-hint-left {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateX(-5px);
+    opacity: 1;
+  }
+}
+
 .process-step .process-icon,
 .process-step .process-number,
 .process-step .process-title,

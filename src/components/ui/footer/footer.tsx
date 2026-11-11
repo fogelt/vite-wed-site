@@ -1,4 +1,4 @@
-import { Instagram, Linkedin } from 'lucide-react';
+import { ArrowUpRight, Instagram, Linkedin } from 'lucide-react';
 import { AdminButton } from '@/components/ui';
 import { NAV_ITEMS } from '@/config/nav';
 import { scrollToSection } from '@/utils';
@@ -18,6 +18,23 @@ export function Footer() {
             <p className="mt-3 max-w-xs text-sm font-light leading-relaxed text-stone-500">
               Bröllopsfotograf i Skåne
             </p>
+            <div className="mt-6">
+              <p className="text-[10px] uppercase tracking-[0.35em] text-stone-400">Portfölj</p>
+              <a
+                href="https://myeliefoto.se"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mt-4 inline-flex items-center gap-2 text-sm font-light text-stone-500 transition-colors duration-300 hover:text-black"
+              >
+                myeliefoto.se
+                <ArrowUpRight
+                  size={14}
+                  strokeWidth={1.5}
+                  className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </a>
+            </div>
           </div>
 
           {/* Navigate */}

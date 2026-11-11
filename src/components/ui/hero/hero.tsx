@@ -127,33 +127,37 @@ export function Hero({ photos, isLoading }: HeroProps) {
           It fades in only once the centre photo (or its blur) is visible, so it
           never darkens the loading skeleton. */}
       <div
-        className={`pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(58%_52%_at_50%_50%,rgba(0,0,0,0.26),transparent_76%)] transition-opacity duration-700 ${centerVisible ? 'opacity-100' : 'opacity-0'
+        className={`pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/45 via-transparent to-black/35 transition-opacity duration-700 ${centerVisible ? 'opacity-100' : 'opacity-0'
           }`}
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex flex-col items-center px-6 text-center">
-        <span className="mb-7 text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)]">
-          Bröllopsfotograf · Skåne
-        </span>
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-8 pb-12 text-center md:pt-12 md:pb-16">
+        <div className="flex flex-col items-center">
+          <span className="mb-5 text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)] md:mb-7">
+            Bröllopsfotograf · Skåne
+          </span>
 
-        <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
-          <span className="sr-only">Bröllopsfotograf i Skåne — </span>
-          Myelie Lendelund
-        </h1>
+          <h1 className="text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:text-5xl">
+            <span className="sr-only">Bröllopsfotograf i Skåne — </span>
+            Myelie Lendelund
+          </h1>
 
-        <span className="my-7 h-px w-16 bg-white/40" aria-hidden="true" />
+          <span className="mt-5 h-px w-16 bg-white/40 md:mt-7" aria-hidden="true" />
+        </div>
 
-        <p className="mb-11 max-w-xl text-sm font-light italic leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_20px_rgba(0,0,0,0.6)] md:text-base">
-          Äkta ögonblick, varsamt bevarade
-        </p>
+        <div className="flex flex-col items-center gap-5 md:gap-6">
+          <p className="max-w-xl text-sm font-light italic leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_20px_rgba(0,0,0,0.6)] md:text-base">
+            Äkta ögonblick, varsamt bevarade
+          </p>
 
-        <button
-          onClick={() => scrollToSection('utvalda-bilder')}
-          className="w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
-        >
-          Se galleriet
-        </button>
+          <button
+            onClick={() => scrollToSection('utvalda-bilder')}
+            className="pointer-events-auto w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
+          >
+            Se bilder
+          </button>
+        </div>
       </div>
 
       <button

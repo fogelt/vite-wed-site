@@ -87,9 +87,9 @@ export function Hero({ photos, isLoading }: HeroProps) {
     // The hero fills the viewport below the sticky header: 4rem on phones and
     // 6.5rem on desktop, where the header is taller (py-10 + logo line).
     <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[calc(100svh-6.5rem)] md:min-h-[560px]">
-      {/* The frames sit inside a thin white frame: full bleed on phones, 97%
+      {/* The frames sit inside a thin white frame: full bleed on phones, 94%
           of the viewport height and a white bar down each side on desktop. */}
-      <div className="relative flex h-full w-full items-center justify-center gap-2 md:h-[97%] md:w-[calc(100%-2rem)]">
+      <div className="relative flex h-full w-full items-center justify-center gap-2 md:h-[94%] md:w-[calc(100%-2rem)]">
         {/* Skeletons mirror the three standing columns so the layout never jumps on load. */}
         {!hasPhotos && (
           <div className="absolute inset-0 flex gap-2" aria-hidden="true">
@@ -130,7 +130,8 @@ export function Hero({ photos, isLoading }: HeroProps) {
           <div className="flex flex-col items-center">
             <h1 className="mb-4 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-5 md:text-5xl">
               <span className="sr-only">Bröllopsfotograf i Skåne — </span>
-              Myelie Lendelund
+              <span className="block">Myelie</span>
+              <span className="block">Lendelund</span>
             </h1>
 
             <span className="mb-4 h-px w-16 bg-white/40 md:mb-5" aria-hidden="true" />

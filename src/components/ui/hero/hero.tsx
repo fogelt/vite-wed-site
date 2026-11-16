@@ -21,9 +21,10 @@ interface HeroProps {
   isLoading?: boolean;
 }
 
-/** Wider than the centre strip needs, with headroom for retina screens. */
+/** Full-bleed mobile frame, wider than it needs, with headroom for retina screens. */
 const CENTER_IMAGE_WIDTH = 1600;
-const SIDE_IMAGE_WIDTH = 900;
+/** Each of the three standing desktop columns only needs about a third of that. */
+const STANDING_IMAGE_WIDTH = 1400;
 
 export function Hero({ photos, isLoading }: HeroProps) {
   const [startIndex, setStartIndex] = useState(0);
@@ -49,8 +50,8 @@ export function Hero({ photos, isLoading }: HeroProps) {
     return () => window.clearInterval(interval);
   }, [isMobile, isLoading, mobilePhotos.length]);
 
-  // Desktop keeps the original still triptych: narrow left, wide centre,
-  // narrow right. Only the phone version cycles.
+  // Desktop shows three equal standing frames side by side. Only the phone
+  // version cycles.
   const desktopLeft = photos.length >= 2 ? photos[0] : undefined;
   const desktopCenter = photos.length >= 2 ? photos[1] : photos[0];
   const desktopRight = photos.length >= 3 ? photos[2] : undefined;
@@ -83,78 +84,85 @@ export function Hero({ photos, isLoading }: HeroProps) {
   const hasPhotos = !isLoading && Boolean(center?.url);
 
   return (
-    <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[78vh] md:max-h-[820px] md:min-h-[520px]">
-      {/* Skeletons mirror the triptych so the layout never jumps on load. */}
-      {!hasPhotos && (
-        <div className="absolute inset-0 flex gap-2" aria-hidden="true">
-          <div className="hidden h-full w-[22%] animate-pulse bg-neutral-100 md:block" />
-          <div className="h-full min-w-0 flex-1 animate-pulse bg-neutral-100" />
-          <div className="hidden h-full w-[22%] animate-pulse bg-neutral-100 md:block" />
-        </div>
-      )}
+    // The hero fills the viewport below the sticky header: 4rem on phones and
+    // 6.5rem on desktop, where the header is taller (py-10 + logo line).
+    <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[calc(100svh-6.5rem)] md:min-h-[560px]">
+      {/* Back to the full-height frame: the three columns fill the viewport
+          below the sticky header, edge to edge, so the photos are as large as
+          possible. Phones keep the single full-bleed frame. */}
+      <div className="relative flex h-full w-full items-center justify-center gap-2">
+        {/* Skeletons mirror the three standing columns so the layout never jumps on load. */}
+        {!hasPhotos && (
+          <div className="absolute inset-0 flex gap-2" aria-hidden="true">
+            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:flex-1 md:basis-0" />
+            <div className="h-full w-full animate-pulse bg-neutral-100 md:flex-1 md:basis-0" />
+            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:flex-1 md:basis-0" />
+          </div>
+        )}
 
-      {hasPhotos && (
-        /* The triptych */
-        <div className="absolute inset-0" aria-hidden="true">
-          <div className="flex h-full w-full gap-2">
+        {hasPhotos && (
+          /* Three standing frames, same height and width */
+          <div className="absolute inset-0 flex items-center justify-center gap-2" aria-hidden="true">
             <HeroStrip
               photo={left}
-              width={SIDE_IMAGE_WIDTH}
+              width={STANDING_IMAGE_WIDTH}
+              priority={!isMobile}
               zoom={isMobile}
-              className="hidden h-full w-[22%] md:block"
+              className="hidden h-full md:block md:flex-1 md:basis-0"
             />
             <HeroStrip
               photo={center}
-              width={CENTER_IMAGE_WIDTH}
+              width={isMobile ? CENTER_IMAGE_WIDTH : STANDING_IMAGE_WIDTH}
               priority
               zoom={isMobile}
-              className="h-full min-w-0 flex-1"
+              className="h-full w-full md:flex-1 md:basis-0"
             />
             <HeroStrip
               photo={right}
-              width={SIDE_IMAGE_WIDTH}
+              width={STANDING_IMAGE_WIDTH}
+              priority={!isMobile}
               zoom={isMobile}
-              className="hidden h-full w-[22%] md:block"
+              className="hidden h-full md:block md:flex-1 md:basis-0"
             />
           </div>
+        )}
+
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-8 pb-12 text-center md:pt-12 md:pb-16">
+          <div className="flex flex-col items-center">
+            <h1 className="mb-4 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-5 md:text-5xl">
+              <span className="sr-only">Bröllopsfotograf i Skåne — </span>
+              Myelie Lendelund
+            </h1>
+
+            <span className="mb-4 h-px w-16 bg-white/40 md:mb-5" aria-hidden="true" />
+
+            <span className="text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)]">
+              Bröllopsfotograf · Skåne
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-5 md:gap-6">
+            <p className="max-w-xl text-sm font-light italic leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_20px_rgba(0,0,0,0.6)] md:text-base">
+              Äkta ögonblick, varsamt bevarade
+            </p>
+
+            <button
+              onClick={() => scrollToSection('utvalda-bilder')}
+              className="pointer-events-auto w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
+            >
+              Se bilder
+            </button>
+          </div>
         </div>
-      )}
 
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-8 pb-12 text-center md:pt-12 md:pb-16">
-        <div className="flex flex-col items-center">
-          <h1 className="mb-4 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-5 md:text-5xl">
-            <span className="sr-only">Bröllopsfotograf i Skåne — </span>
-            Myelie Lendelund
-          </h1>
-
-          <span className="mb-4 h-px w-16 bg-white/40 md:mb-5" aria-hidden="true" />
-
-          <span className="text-[11px] uppercase tracking-[0.5em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)]">
-            Bröllopsfotograf · Skåne
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center gap-5 md:gap-6">
-          <p className="max-w-xl text-sm font-light italic leading-relaxed text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_20px_rgba(0,0,0,0.6)] md:text-base">
-            Äkta ögonblick, varsamt bevarade
-          </p>
-
-          <button
-            onClick={() => scrollToSection('utvalda-bilder')}
-            className="pointer-events-auto w-full bg-white px-10 py-4 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-white/90 sm:w-auto"
-          >
-            Se bilder
-          </button>
-        </div>
+        <button
+          onClick={() => scrollToSection('valkommen')}
+          aria-label="Scrolla vidare"
+          className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 text-white/65 drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-colors duration-300 hover:text-white motion-safe:animate-bounce"
+        >
+          <ChevronDown size={22} strokeWidth={1.25} />
+        </button>
       </div>
-
-      <button
-        onClick={() => scrollToSection('valkommen')}
-        aria-label="Scrolla vidare"
-        className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 text-white/65 drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-colors duration-300 hover:text-white motion-safe:animate-bounce"
-      >
-        <ChevronDown size={22} strokeWidth={1.25} />
-      </button>
     </section>
   );
 }
@@ -188,7 +196,7 @@ function HeroStrip({
 }: {
   photo?: HeroPhoto;
   width: number;
-  /** Load immediately. Side strips stay lazy so they are not fetched on mobile. */
+  /** Load immediately. Side strips only load eagerly on desktop, never on phones. */
   priority?: boolean;
   /** Slow Ken Burns zoom. Only enabled for the mobile hero. */
   zoom?: boolean;

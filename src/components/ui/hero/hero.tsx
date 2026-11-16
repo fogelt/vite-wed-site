@@ -155,13 +155,13 @@ export function Hero({ photos, isLoading }: HeroProps) {
 
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-between px-6 pt-6 pb-12 text-center md:pt-8 md:pb-16">
           <div className="flex flex-col items-center">
-            <h1 className="mb-4 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-5 md:text-5xl">
+            <h1 className="mb-2.5 text-3xl font-light uppercase leading-tight tracking-[0.2em] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.55),0_4px_32px_rgba(0,0,0,0.65)] sm:text-4xl sm:tracking-[0.25em] md:mb-3 md:text-5xl">
               <span className="sr-only">Bröllopsfotograf Skåne — </span>
               <span className="block">Myelie</span>
               <span className="block">Lendelund</span>
             </h1>
 
-            <span className="mb-4 h-px w-16 bg-white/40 md:mb-5" aria-hidden="true" />
+            <span className="mb-2 h-px w-16 bg-white/40 md:mb-2.5" aria-hidden="true" />
 
             <span className="text-[11px] uppercase tracking-[0.35em] text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.65),0_2px_18px_rgba(0,0,0,0.6)] sm:tracking-[0.5em]">
               Bröllopsfotograf · Skåne

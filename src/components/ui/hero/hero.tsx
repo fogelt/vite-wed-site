@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   cloudinaryImage,
@@ -25,6 +26,13 @@ interface HeroProps {
 const CENTER_IMAGE_WIDTH = 1600;
 /** Each of the three standing desktop columns only needs about a third of that. */
 const STANDING_IMAGE_WIDTH = 1400;
+/** Fallback portrait ratio when a photo has no stored dimensions. */
+const FALLBACK_ASPECT = 2 / 3;
+
+function photoAspect(photo?: HeroPhoto) {
+  if (!photo?.width || !photo?.height) return FALLBACK_ASPECT;
+  return photo.width / photo.height;
+}
 
 export function Hero({ photos, isLoading }: HeroProps) {
   const [startIndex, setStartIndex] = useState(0);
@@ -50,11 +58,19 @@ export function Hero({ photos, isLoading }: HeroProps) {
     return () => window.clearInterval(interval);
   }, [isMobile, isLoading, mobilePhotos.length]);
 
-  // Desktop shows three equal standing frames side by side. Only the phone
-  // version cycles.
+  // Desktop shows three standing frames side by side, in the order we always
+  // had. Only the phone version cycles.
   const desktopLeft = photos.length >= 2 ? photos[0] : undefined;
   const desktopCenter = photos.length >= 2 ? photos[1] : photos[0];
   const desktopRight = photos.length >= 3 ? photos[2] : undefined;
+
+  // Each desktop frame follows its own photo's aspect ratio. The row is sized
+  // so the three frames share one height and always fit, which means nothing
+  // has to be cropped and no white bands appear inside the frames.
+  const desktopAspectSum = [desktopLeft, desktopCenter, desktopRight]
+    .filter((photo): photo is HeroPhoto => Boolean(photo?.url))
+    .map(photoAspect)
+    .reduce((sum, ratio) => sum + ratio, 0) || FALLBACK_ASPECT;
 
   const mobileIndex = mobilePhotos.length > 0
     ? startIndex % mobilePhotos.length
@@ -86,42 +102,53 @@ export function Hero({ photos, isLoading }: HeroProps) {
   return (
     // The hero fills the viewport below the sticky header: 4rem on phones and
     // 6.5rem on desktop, where the header is taller (py-10 + logo line).
-    <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white md:h-[calc(100svh-6.5rem)] md:min-h-[560px]">
+    <section className="relative flex h-[calc(100svh-4rem)] min-h-[480px] w-full items-center justify-center overflow-hidden bg-white [container-type:size] md:h-[calc(100svh-6.5rem)] md:min-h-[560px]">
       {/* The frames sit inside a thin white frame: full bleed on phones, 94%
-          of the viewport height and a white bar down each side on desktop. */}
-      <div className="relative flex h-full w-full items-center justify-center gap-2 md:h-[94%] md:w-[calc(100%-2rem)]">
+          of the viewport height and a white bar down each side on desktop. The
+          row shrinks to the largest block that fits, with each frame keeping
+          its photo's own ratio, so nothing is cut. */}
+      <div
+        className="relative flex h-full w-full items-center justify-center gap-2 md:h-[min(94cqh,calc((100cqw_-_3rem)/var(--hero-ratios)))] md:w-[min(calc(100cqw_-_2rem),calc(94cqh*var(--hero-ratios)_+_1rem))]"
+        style={{ '--hero-ratios': desktopAspectSum } as CSSProperties}
+      >
         {/* Skeletons mirror the three standing columns so the layout never jumps on load. */}
         {!hasPhotos && (
-          <div className="absolute inset-0 flex gap-2" aria-hidden="true">
-            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:flex-1 md:basis-0" />
-            <div className="h-full w-full animate-pulse bg-neutral-100 md:flex-1 md:basis-0" />
-            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:flex-1 md:basis-0" />
+          <div className="absolute inset-0 flex items-center justify-center gap-2" aria-hidden="true">
+            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:w-auto md:aspect-[2/3]" />
+            <div className="h-full w-full animate-pulse bg-neutral-100 md:w-auto md:aspect-[2/3]" />
+            <div className="hidden h-full animate-pulse bg-neutral-100 md:block md:w-auto md:aspect-[2/3]" />
           </div>
         )}
 
         {hasPhotos && (
-          /* Three standing frames, same height and width */
+          /* Three standing frames, one shared height, each at its photo's ratio */
           <div className="absolute inset-0 flex items-center justify-center gap-2" aria-hidden="true">
             <HeroStrip
               photo={left}
               width={STANDING_IMAGE_WIDTH}
               priority={!isMobile}
               zoom={isMobile}
-              className="hidden h-full md:block md:flex-1 md:basis-0"
+              fit={isMobile ? 'cover' : 'contain'}
+              className="hidden h-full md:block"
+              style={{ aspectRatio: photoAspect(desktopLeft) }}
             />
             <HeroStrip
               photo={center}
               width={isMobile ? CENTER_IMAGE_WIDTH : STANDING_IMAGE_WIDTH}
               priority
               zoom={isMobile}
-              className="h-full w-full md:flex-1 md:basis-0"
+              fit={isMobile ? 'cover' : 'contain'}
+              className="h-full w-full md:w-auto"
+              style={{ aspectRatio: photoAspect(desktopCenter) }}
             />
             <HeroStrip
               photo={right}
               width={STANDING_IMAGE_WIDTH}
               priority={!isMobile}
               zoom={isMobile}
-              className="hidden h-full md:block md:flex-1 md:basis-0"
+              fit={isMobile ? 'cover' : 'contain'}
+              className="hidden h-full md:block"
+              style={{ aspectRatio: photoAspect(desktopRight) }}
             />
           </div>
         )}
@@ -191,8 +218,10 @@ function HeroStrip({
   width,
   priority = false,
   zoom = false,
+  fit = 'cover',
   onVisible,
   className = '',
+  style,
 }: {
   photo?: HeroPhoto;
   width: number;
@@ -200,9 +229,12 @@ function HeroStrip({
   priority?: boolean;
   /** Slow Ken Burns zoom. Only enabled for the mobile hero. */
   zoom?: boolean;
+  /** Crop to fill the frame, or show the whole photo with white space around it. */
+  fit?: 'cover' | 'contain';
   /** Called once the blurred preview or the full photo is visible. */
   onVisible?: () => void;
   className?: string;
+  style?: CSSProperties;
 }) {
   const src = photo?.url ? cloudinaryImage(photo.url, { width }) : '';
   const placeholder = photo?.url ? cloudinaryImage(photo.url, { blur: true }) : '';
@@ -212,6 +244,9 @@ function HeroStrip({
   const [previousSrc, setPreviousSrc] = useState<string | null>(null);
   const [fadePrevious, setFadePrevious] = useState(false);
   const visible = preview.loaded || image.loaded || Boolean(previousSrc);
+  const fitClass = fit === 'contain'
+    ? 'object-contain object-center'
+    : 'object-cover object-[center_35%]';
 
   useLayoutEffect(() => {
     if (previousSrcRef.current === src) return;
@@ -253,7 +288,7 @@ function HeroStrip({
   if (!photo?.url) return null;
 
   return (
-    <div className={`relative overflow-hidden bg-white ${className}`}>
+    <div className={`relative overflow-hidden bg-white ${className}`} style={style}>
       {/* Very dim skeleton in the card's shape, replaced by the blur and then the photo. */}
       {!previousSrc && (
         <div
@@ -288,7 +323,7 @@ function HeroStrip({
               decoding="async"
               onLoad={preview.onLoad}
               onError={preview.onError}
-              className={`pointer-events-none absolute inset-0 z-0 h-full w-full scale-105 object-cover object-[center_35%] transition-opacity duration-700 ease-out ${preview.loaded ? 'opacity-100' : 'opacity-0'
+              className={`pointer-events-none absolute inset-0 z-0 h-full w-full scale-105 transition-opacity duration-700 ease-out ${fitClass} ${preview.loaded ? 'opacity-100' : 'opacity-0'
                 }`}
             />
           )}
@@ -304,7 +339,7 @@ function HeroStrip({
             fetchPriority={priority ? 'high' : 'auto'}
             onLoad={image.onLoad}
             onError={image.onError}
-            className={`absolute inset-0 z-10 h-full w-full object-cover object-[center_35%] transition-[opacity,transform] duration-1000 ease-out ${
+            className={`absolute inset-0 z-10 h-full w-full ${fitClass} transition-[opacity,transform] duration-1000 ease-out ${
               previousSrc
                 ? 'scale-100 opacity-100'
                 : image.loaded
@@ -319,7 +354,7 @@ function HeroStrip({
               src={previousSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-0 z-20 h-full w-full object-cover object-[center_35%] transition-opacity [transition-duration:1800ms] ease-in-out [will-change:opacity] ${
+              className={`pointer-events-none absolute inset-0 z-20 h-full w-full ${fitClass} transition-opacity [transition-duration:1800ms] ease-in-out [will-change:opacity] ${
                 fadePrevious ? 'opacity-0' : 'opacity-100'
               }`}
             />

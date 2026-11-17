@@ -24,13 +24,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
         path: '/',
         element: <AppRoot />,
         ErrorBoundary: AppRootErrorBoundary,
-        HydrateFallback: () => (
-          <div className="flex h-screen items-center justify-center bg-white">
-            <span className="text-[11px] uppercase tracking-[0.3em] text-stone-400">
-              Laddar…
-            </span>
-          </div>
-        ),
+        // The white curtain in index.html covers this wait, so it should stay
+        // invisible: a plain white page rather than a loading label.
+        HydrateFallback: () => null,
         children: [
           { index: true, lazy: () => import('./routes/app/home').then(convert(queryClient)) },
         ],

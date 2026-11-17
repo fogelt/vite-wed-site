@@ -3,12 +3,17 @@ import type { CSSProperties } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
   cloudinaryImage,
+  isSiteCurtainVisible,
+  markSiteMounted,
   preloadImage,
+  revealSiteCurtain,
   scrollToSection,
   useImageLoaded,
+  waitForImages,
 } from '@/utils';
 import {
   desktopHeroPhotos,
+  heroFirstFrameUrls,
   heroImageSrc,
   loadHeroSnapshot,
   MOBILE_HERO_QUERY,
@@ -104,6 +109,34 @@ export function Hero({ photos: loadedPhotos, isLoading: isDataLoading }: HeroPro
   const center = isMobile ? mobilePhotos[mobileIndex] : desktopCenter;
   const right = isMobile ? undefined : desktopRight;
   const hasPhotos = !isLoading && Boolean(center?.url);
+
+  // The white curtain from index.html stays up until the frames that will be on
+  // screen are fully loaded, then waves away from the top-left corner. Waiting
+  // for the whole viewport means the page is never revealed half-empty, while
+  // the curtain hides the wait (and adds its spinner only if it takes a while).
+  const firstFrameKey = isLoading ? '' : heroFirstFrameUrls(photos, isMobile).join('\n');
+
+  useEffect(() => {
+    // From here on the curtain may give up on a photo that never finishes.
+    markSiteMounted();
+    if (isLoading) return;
+
+    // Nothing to wait for (an empty gallery): show the page right away.
+    const srcs = firstFrameKey ? firstFrameKey.split('\n') : [];
+    if (srcs.length === 0) {
+      revealSiteCurtain();
+      return;
+    }
+
+    let cancelled = false;
+    void waitForImages(srcs).then(() => {
+      if (!cancelled) revealSiteCurtain();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, firstFrameKey]);
 
   return (
     // The hero fills the viewport below the sticky header: 4rem on phones and
@@ -265,7 +298,15 @@ function HeroStrip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * On the first load the white curtain covers the page, so the photos do not
+   * need a fade of their own: they can pop in behind it and the curtain's wave
+   * becomes the only entrance. Rotations after the reveal still cross-fade.
+   */
+  const [behindCurtain] = useState(isSiteCurtainVisible);
+
   const shown = instant || image.loaded;
+  const noFirstFade = instant || behindCurtain;
   const visible = preview.loaded || shown || Boolean(previousSrc);
   const fitClass = fit === 'contain'
     ? 'object-contain object-center'
@@ -362,7 +403,7 @@ function HeroStrip({
             fetchPriority={priority ? 'high' : 'auto'}
             onLoad={image.onLoad}
             onError={image.onError}
-            className={`absolute inset-0 z-10 h-full w-full ${fitClass} ${instant ? "" : "transition-[opacity,transform] duration-1000 ease-out"} ${
+            className={`absolute inset-0 z-10 h-full w-full ${fitClass} ${noFirstFade ? '' : 'transition-[opacity,transform] duration-1000 ease-out'} ${
               previousSrc
                 ? 'scale-100 opacity-100'
                 : shown

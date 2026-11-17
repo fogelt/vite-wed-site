@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { NAV_ITEMS, SECTION_IDS } from '@/config/nav';
 import { scrollToSection, scrollToTop } from '@/utils';
-import { useScrollProgress } from './scroll-progress';
+import { useNavProgress, useScrollProgress } from './scroll-progress';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const activeSection = useActiveSection(SECTION_IDS);
   const progress = useScrollProgress();
+  const navRef = useRef<HTMLElement>(null);
+  const navProgress = useNavProgress(navRef, SECTION_IDS);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
@@ -39,10 +41,11 @@ export function Header() {
         </div>
 
         <div className="relative hidden lg:block">
-          <nav className="flex items-center gap-7" aria-label="Huvudmeny">
+          <nav ref={navRef} className="flex items-center gap-7" aria-label="Huvudmeny">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.target}
+                data-nav-target={item.target}
                 onClick={() => handleNavigate(item.target)}
                 aria-current={activeSection === item.target ? 'true' : undefined}
                 className={`text-[10px] uppercase tracking-[0.2em] transition-colors duration-300 ${
@@ -54,9 +57,9 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Scroll progress, tucked just under the nav */}
+          {/* Scroll progress under the nav — its tip tracks the link for the section in view */}
           <div className="absolute inset-x-0 top-full mt-3 h-[2px] bg-stone-200" aria-hidden="true">
-            <div className="h-full bg-stone-900" style={{ width: `${progress * 100}%` }} />
+            <div className="h-full bg-stone-900" style={{ width: `${navProgress}px` }} />
           </div>
         </div>
 

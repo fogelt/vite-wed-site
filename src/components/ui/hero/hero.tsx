@@ -7,25 +7,21 @@ import {
   scrollToSection,
   useImageLoaded,
 } from '@/utils';
-
-interface HeroPhoto {
-  id: string;
-  url: string;
-  alt?: string;
-  width?: number;
-  height?: number;
-  mobileHero?: boolean;
-}
+import {
+  desktopHeroPhotos,
+  heroImageSrc,
+  loadHeroSnapshot,
+  MOBILE_HERO_QUERY,
+  mobileHeroPhotos,
+  saveHeroSnapshot,
+  type HeroPhoto,
+} from './hero-frames';
 
 interface HeroProps {
   photos: HeroPhoto[];
   isLoading?: boolean;
 }
 
-/** Full-bleed mobile frame, wider than it needs, with headroom for retina screens. */
-const CENTER_IMAGE_WIDTH = 1600;
-/** Each of the three standing desktop columns only needs about a third of that. */
-const STANDING_IMAGE_WIDTH = 1400;
 /** Fallback portrait ratio when a photo has no stored dimensions. */
 const FALLBACK_ASPECT = 2 / 3;
 
@@ -34,16 +30,24 @@ function photoAspect(photo?: HeroPhoto) {
   return photo.width / photo.height;
 }
 
-export function Hero({ photos, isLoading }: HeroProps) {
+export function Hero({ photos: loadedPhotos, isLoading: isDataLoading }: HeroProps) {
   const [startIndex, setStartIndex] = useState(0);
   const isMobile = useIsMobile();
 
-  // The photographer chooses the mobile hero rotation in the admin. If none
-  // are marked yet, show the first photo without cycling.
-  const selectedHeroPhotos = photos.filter((photo) => photo.mobileHero);
-  const mobilePhotos = selectedHeroPhotos.length > 0
-    ? selectedHeroPhotos
-    : photos.slice(0, 1);
+  // While the gallery data loads, a returning visitor sees the hero from their
+  // last visit (its images were already requested by the inline prefetch
+  // script) instead of a skeleton. The fresh list takes over once it is in.
+  const [snapshot] = useState(loadHeroSnapshot);
+  const showSnapshot = Boolean(isDataLoading && snapshot);
+  const photos = showSnapshot && snapshot ? snapshot : loadedPhotos;
+  const isLoading = isDataLoading && !showSnapshot;
+
+  useEffect(() => {
+    if (!isDataLoading && loadedPhotos.length > 0) saveHeroSnapshot(loadedPhotos);
+  }, [isDataLoading, loadedPhotos]);
+
+  // The photographer chooses the mobile hero rotation in the admin.
+  const mobilePhotos = mobileHeroPhotos(photos);
 
   useEffect(() => {
     if (!isMobile || isLoading || mobilePhotos.length < 2) return;
@@ -60,9 +64,11 @@ export function Hero({ photos, isLoading }: HeroProps) {
 
   // Desktop shows three standing frames side by side, in the order we always
   // had. Only the phone version cycles.
-  const desktopLeft = photos.length >= 2 ? photos[0] : undefined;
-  const desktopCenter = photos.length >= 2 ? photos[1] : photos[0];
-  const desktopRight = photos.length >= 3 ? photos[2] : undefined;
+  const {
+    left: desktopLeft,
+    center: desktopCenter,
+    right: desktopRight,
+  } = desktopHeroPhotos(photos);
 
   // Each desktop frame follows its own photo's aspect ratio. The row is sized
   // so the three frames share one height and always fit, which means nothing
@@ -90,7 +96,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
 
     for (const photo of [nextMobilePhoto, secondNextMobilePhoto]) {
       if (!photo?.url) continue;
-      preloadImage(cloudinaryImage(photo.url, { width: CENTER_IMAGE_WIDTH }));
+      preloadImage(heroImageSrc(photo.url, true));
     }
   }, [isMobile, nextMobilePhoto?.url, secondNextMobilePhoto?.url]);
 
@@ -125,7 +131,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
           <div className="absolute inset-0 flex items-center justify-center gap-2" aria-hidden="true">
             <HeroStrip
               photo={left}
-              width={STANDING_IMAGE_WIDTH}
+              isMobile={isMobile}
               priority={!isMobile}
               zoom={isMobile}
               fit={isMobile ? 'cover' : 'contain'}
@@ -134,7 +140,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
             />
             <HeroStrip
               photo={center}
-              width={isMobile ? CENTER_IMAGE_WIDTH : STANDING_IMAGE_WIDTH}
+              isMobile={isMobile}
               priority
               zoom={isMobile}
               fit={isMobile ? 'cover' : 'contain'}
@@ -143,7 +149,7 @@ export function Hero({ photos, isLoading }: HeroProps) {
             />
             <HeroStrip
               photo={right}
-              width={STANDING_IMAGE_WIDTH}
+              isMobile={isMobile}
               priority={!isMobile}
               zoom={isMobile}
               fit={isMobile ? 'cover' : 'contain'}
@@ -197,12 +203,12 @@ export function Hero({ photos, isLoading }: HeroProps) {
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined'
-      ? window.matchMedia('(max-width: 767px)').matches
+      ? window.matchMedia(MOBILE_HERO_QUERY).matches
       : false,
   );
 
   useEffect(() => {
-    const query = window.matchMedia('(max-width: 767px)');
+    const query = window.matchMedia(MOBILE_HERO_QUERY);
     const update = () => setIsMobile(query.matches);
 
     update();
@@ -215,7 +221,7 @@ function useIsMobile() {
 
 function HeroStrip({
   photo,
-  width,
+  isMobile,
   priority = false,
   zoom = false,
   fit = 'cover',
@@ -224,7 +230,8 @@ function HeroStrip({
   style,
 }: {
   photo?: HeroPhoto;
-  width: number;
+  /** Picks the full-bleed phone size or the standing desktop size. */
+  isMobile: boolean;
   /** Load immediately. Side strips only load eagerly on desktop, never on phones. */
   priority?: boolean;
   /** Slow Ken Burns zoom. Only enabled for the mobile hero. */
@@ -236,14 +243,30 @@ function HeroStrip({
   className?: string;
   style?: CSSProperties;
 }) {
-  const src = photo?.url ? cloudinaryImage(photo.url, { width }) : '';
+  const src = photo?.url ? heroImageSrc(photo.url, isMobile) : '';
   const placeholder = photo?.url ? cloudinaryImage(photo.url, { blur: true }) : '';
   const preview = useImageLoaded(placeholder);
   const image = useImageLoaded(src);
   const previousSrcRef = useRef(src);
   const [previousSrc, setPreviousSrc] = useState<string | null>(null);
   const [fadePrevious, setFadePrevious] = useState(false);
-  const visible = preview.loaded || image.loaded || Boolean(previousSrc);
+
+  /**
+   * The photo was already downloaded when the hero mounted (preloaded by the
+   * inline prefetch script, or cached from a previous visit). Show it as is:
+   * the skeleton, blur and fade-in exist to cover a wait that did not happen.
+   * Runs before the first paint, so not even one empty frame is shown.
+   */
+  const [instant, setInstant] = useState(false);
+  useLayoutEffect(() => {
+    const img = image.ref.current;
+    if (img?.complete && img.naturalWidth > 0) setInstant(true);
+    // Only the first frame can be instant; later rotations cross-fade.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const shown = instant || image.loaded;
+  const visible = preview.loaded || shown || Boolean(previousSrc);
   const fitClass = fit === 'contain'
     ? 'object-contain object-center'
     : 'object-cover object-[center_35%]';
@@ -290,7 +313,7 @@ function HeroStrip({
   return (
     <div className={`relative overflow-hidden bg-white ${className}`} style={style}>
       {/* Very dim skeleton in the card's shape, replaced by the blur and then the photo. */}
-      {!previousSrc && (
+      {!previousSrc && !instant && (
         <div
           className={`absolute inset-0 bg-neutral-100 transition-opacity duration-700 ${visible ? 'opacity-0' : 'animate-pulse'
             }`}
@@ -313,7 +336,7 @@ function HeroStrip({
           }`}
         >
           {/* The 1 KB blurred Cloudinary preview appears first and blends into the photo. */}
-          {!previousSrc && (
+          {!previousSrc && !instant && (
             <img
               ref={preview.ref}
               src={placeholder}
@@ -339,10 +362,10 @@ function HeroStrip({
             fetchPriority={priority ? 'high' : 'auto'}
             onLoad={image.onLoad}
             onError={image.onError}
-            className={`absolute inset-0 z-10 h-full w-full ${fitClass} transition-[opacity,transform] duration-1000 ease-out ${
+            className={`absolute inset-0 z-10 h-full w-full ${fitClass} ${instant ? "" : "transition-[opacity,transform] duration-1000 ease-out"} ${
               previousSrc
                 ? 'scale-100 opacity-100'
-                : image.loaded
+                : shown
                   ? 'scale-100 opacity-100'
                   : 'scale-[1.04] opacity-0'
             }`}

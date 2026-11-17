@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ImageCard } from '@/components/ui';
-import { cloudinaryImage, preloadImage, VARIANT_THUMB_WIDTH } from '@/utils';
+import { cloudinaryImage, preloadImage, preloadModalImage, VARIANT_THUMB_WIDTH } from '@/utils';
 import { Images } from 'lucide-react';
+
+/** How long the mouse must rest on a tile before its modal image is fetched. */
+const HOVER_INTENT_DELAY = 120;
 
 interface Photo {
   id: string;
@@ -9,6 +12,8 @@ interface Photo {
   alt?: string;
   description?: string;
   photo_variants?: { id: string; url: string }[];
+  width?: number;
+  height?: number;
 }
 
 interface ImageContainerProps {
@@ -58,6 +63,34 @@ export function ImageContainer({
       preloadImage(cloudinaryImage(variant.url, { width: VARIANT_THUMB_WIDTH }));
     }
   };
+
+  /** Pending hover-intent timer, so only a tile the pointer rests on is warmed. */
+  const hoverTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
+
+  /**
+   * Start downloading the modal-size image as soon as the visitor shows intent
+   * to open a tile, instead of on click. A short hover dwell filters out the
+   * pointer merely passing over tiles (or tiles scrolling under it); a press
+   * warms immediately, which on touch devices is the only signal we get.
+   */
+  const intentHandlers = (photo: Photo) => ({
+    onPointerEnter: (e: React.PointerEvent) => {
+      warmVariantThumbs(photo);
+      if (e.pointerType !== 'mouse') return;
+      window.clearTimeout(hoverTimer.current);
+      hoverTimer.current = window.setTimeout(
+        () => preloadModalImage(photo.url),
+        HOVER_INTENT_DELAY,
+      );
+    },
+    onPointerLeave: () => window.clearTimeout(hoverTimer.current),
+    onPointerDown: () => {
+      warmVariantThumbs(photo);
+      preloadModalImage(photo.url);
+    },
+  });
 
   useEffect(() => {
     if (isLoading) return;
@@ -304,8 +337,7 @@ export function ImageContainer({
           <div
             key={photo.id}
             className={`${sizingClass} overflow-hidden bg-neutral-100`}
-            onPointerEnter={() => warmVariantThumbs(photo)}
-            onPointerDown={() => warmVariantThumbs(photo)}
+            {...intentHandlers(photo)}
           >
             <ImageCard
               url={photo.url}
@@ -316,6 +348,8 @@ export function ImageContainer({
               }`}
               sizes={getSizes(index)}
               revealDelay={Math.min(index, 4) * 60}
+              width={photo.width}
+              height={photo.height}
               onClick={(previewSrc) => onItemClick?.(photo, previewSrc)}
               has_variant={photo.photo_variants?.length ? <Images size={15} /> : null}
             />

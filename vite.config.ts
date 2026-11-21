@@ -3,6 +3,7 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { build as esbuild } from "esbuild";
 import path from 'path';
+import { prerenderContent } from './prerender-content';
 
 /**
  * Bundles `src/prefetch/home-prefetch.ts` into a small classic script and
@@ -48,6 +49,7 @@ export default defineConfig({
   plugins: [
     react(),
     inlineHomePrefetch(),
+    prerenderContent(),
   ],
 
   css: {

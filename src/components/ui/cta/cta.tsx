@@ -1,10 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services";
 import { Mail, Phone } from 'lucide-react';
+import { ContactForm } from '../contact-form';
 import { Reveal } from '../reveal';
 
 const FALLBACK_EMAIL = "myelie@live.se";
 const FALLBACK_PHONE = "+46 72 16 82 019";
+
+const linkClasses =
+  'inline-flex items-center gap-2.5 whitespace-nowrap border-b border-transparent pb-0.5 text-sm font-light text-stone-600 transition-colors duration-300 hover:border-stone-400 hover:text-stone-900';
 
 export function ContactCTA() {
   const { data: content } = useQuery({
@@ -30,25 +34,30 @@ export function ContactCTA() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-relaxed text-stone-600 md:text-base">
-            Berätta om era planer så tar vi det därifrån. datum, plats och era tankar.
+            <strong>Berätta om era planer så tar vi det därifrån. datum, plats och era tankar.</strong>
           </p>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          {/* The address and number are shown as what they are, not as buttons
+              with a verb: the only "send" on the page is the form's own. */}
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-10">
             <a
               href={`mailto:${email}?subject=${encodeURIComponent("Förfrågan om bröllopsfotografering")}`}
-              className="inline-flex w-full items-center justify-center gap-3 border border-black px-10 py-3.5 text-[11px] uppercase tracking-[0.28em] text-stone-900 transition-colors duration-300 hover:bg-stone-50 sm:w-auto"
+              className={linkClasses}
             >
               <Mail size={14} strokeWidth={1.5} aria-hidden="true" />
-              Skicka e-post
+              {email}
             </a>
-            <a
-              href={`tel:${phone.replace(/\s/g, '')}`}
-              className="inline-flex w-full items-center justify-center gap-3 border border-stone-300 px-10 py-3.5 text-[11px] uppercase tracking-[0.28em] text-stone-500 transition-colors duration-300 hover:border-stone-400 hover:text-stone-900 sm:w-auto"
-            >
+            <a href={`tel:${phone.replace(/\s/g, '')}`} className={linkClasses}>
               <Phone size={14} strokeWidth={1.5} aria-hidden="true" />
               {phone}
             </a>
           </div>
+
+          <p className="mt-12 text-[10px] uppercase tracking-[0.35em] text-stone-400">
+            Eller skriv direkt här
+          </p>
+
+          <ContactForm email={email} phone={phone} />
         </Reveal>
       </div>
     </section>
